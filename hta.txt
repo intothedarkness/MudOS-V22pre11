@@ -1,0 +1,3867 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>ImpactMatch</title>
+
+    <hta:application id="allocator"
+                     application="yes"
+                     applicationname="ImpactMatch"
+                     border="thick"
+                     caption="yes"
+                     showintaskbar="yes"
+                     singleinstance="no"
+                     sysmenu="yes">
+
+        <style type="text/css">
+            /*margin and padding on body element
+            can introduce errors in determining
+            element position and are not recommended;
+            we turn them off as a foundation for YUI
+            CSS treatments. */
+            body {
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/fonts/fonts-min.css">
+        <link rel="stylesheet" type="text/css" href="http://yui.yaNhooapis.com/2.9.0/build/datatable/assets/skins/sam/datatable.css">
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/menu/assets/skins/sam/menu.css">
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/button/assets/skins/sam/button.css">
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/container/assets/skins/sam/container.css">
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/tabview/assets/skins/sam/tabview.css">
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/resize/assets/skins/sam/resize.css" />
+
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/animation/animation-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/dragdrop/dragdrop-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/element/element-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/button/button-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/datasource/datasource-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/datatable/datatable-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/container/container-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/menu/menu-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/tabview/tabview-min.js"></script>
+        <script type="text/javascript" src="http://yui.yahooapis.com/2.9.0/build/resize/resize.js"></script>
+
+        <script type="text/javascript">
+            var calibrator = new Object();
+            calibrator.view = new Object();
+
+            YAHOO.util.Event.addListener(window, "load", function () {
+
+                window.resizeTo(1400, 1110);
+
+                calibrator.view.load();
+                calibrator.data.open(function () {
+                    calibrator.view.tab.set("activeIndex", 0);
+                });
+            });
+
+            // Data Object
+
+            calibrator.data = function () {
+
+                var NoteFormatter = function (elCell, oRecord, oColumn, oData) {
+                    var sStr = oData;
+                    if (sStr.length > 8) {
+                        sStr = sStr.substring(0, 7) + "...";
+                    }
+                    elCell.innerHTML = sStr;
+                };
+
+                var columnDefs = [
+                    { key: "Name", formatter: "text", sortable: true, required: true, header: "Employee Name" },
+                    { key: "Alias", formatter: "text", sortable: true, required: true, header: "Email" },
+                    { key: "Title", formatter: "text", sortable: true, header: "Current Address Book Title" },
+                    { key: "MonthsInLevel", label: "Months in<br>Level", formatter: "number", sortable: true, header: "Months in Level" },
+                    { key: "Level", formatter: "number", sortable: true, required: true, header: "Rewards Level" },
+                    { key: "PERN", formatter: "text", sortable: false, header: "Personnel #" },
+                    { key: "Promo", label: "Promotion", formatter: "text", sortable: true, write: true, header: "Promotion" },
+                    { key: "TopRewards", formatter: "text", sortable: true, header: "Top Rewards" },
+                    { key: "ZeroRewards", formatter: "text", sortable: true, header: "Zero Rewards" },
+                    { key: "Minus2Rating", label: "FY21<br>Rating", formatter: "text", sortable: true, header: "2021 Performance Rating" },
+                    { key: "Minus1Rating", label: "FY22<br>Rating", formatter: "text", sortable: true, header: "2022 Performance Rating" },
+//                    { key: "Minus3Rating", label: "FY16<br>Rating", formatter: "number", sortable: true, header: "2016 Performance Rating" },
+                    { key: "BucketRank", label: "Assigned<br>Group", formatter: "number", sortable: true, write: true, header: "Assigned Group" },
+                    { key: "Bucket", label: "Performance<br>Rating", formatter: "number", sortable: true, write: true, header: "Performance Rating" },
+                    { key: "VP", label: "Vice<br>President", formatter: "text", sortable: true, header: "Reports To Email Level 2" },
+                    { key: "Director", label: "Director", formatter: "text", sortable: true, header: "Reports To Email Level 3" },
+                    { key: "DevManager", label: "Manager", formatter: "text", sortable: true, header: "Reports To Email Level 4" },
+                    { key: "Manager", label: "Lead", formatter: "text", sortable: true, header: "Reports To Email Level 5" },
+                    { key: "Manager", label: "Lead", formatter: "text", sortable: true, header: "Reports To Email Level 6" },
+                    { key: "Notes", label: "Rewards<br>Justification", formatter: NoteFormatter, sortable: false, write: true, note: true, header: "Rewards Justification" }
+                ];
+
+                var ManagerTypes = ["VP", "Director", "DevManager", "Manager"];
+
+                var ManagerColors = [
+                    "blue",
+                    "green",
+                    "red",
+                    "yellow",
+                    "purple",
+                    "darkblue",
+                    "orange",
+                    "darkred",
+                    "darkgreen",
+                    "gray",
+                    "cyan",
+                    "darkyellow",
+                    "black",
+                    "darkgray",
+                    "white"
+                ];
+
+                var PeerBands = [
+                    { slots: 10 },
+                    //{ slots: 10 },
+                    { slots: 9 },
+                    //{ slots: 9 },
+                    { slots: 8 },
+                    //{ slots: 8 },
+                    { slots: 7 },
+                    //{ slots: 7 },
+                    { slots: 7 },
+                    { slots: 6 },
+                    //{ slots: 6 },
+                    { slots: 6 },
+                    { slots: 5 },
+                    //{ slots: 5 },
+                    //{ slots: 5 },
+                    { slots: 4 },
+                    //{ slots: 4 },
+                    { slots: 3 },
+                    //{ slots: 3 },
+                    { slots: 0 },
+                    { label: "Not Assigned" }
+                ];
+
+                var LevelBands = [
+                    { min: 68, max: 70 },
+                    { min: 65, max: 67 },
+                    { min: 63, max: 64 },
+                    { min: 61, max: 62 },
+                    { min: 59, max: 60 },
+                    { min: 53, max: 58, label: "58 & below" }
+                ];
+
+                for (var i = 0; i < LevelBands.length; i++) {
+                    LevelBands[i].peerBands = [];
+                    for (var j = 0; j < PeerBands.length; j++) {
+                        LevelBands[i].peerBands.push(PeerBands[j]);
+                    }
+                }
+
+                var Promos = [
+                    { label: "March 1, 2022 (Mid-Year)", rating: "March 1, 2022 (Mid-Year)", color: "green" },
+                    { label: "June 1, 2022 (OOB)", rating: "June 1, 2022 (OOB)", color: "yellow" },
+                    { label: "Sept 1, 2022 (Annual)", rating: "Sept 1, 2022 (Annual)", color: "orange" },
+                    { label: "March 1, 2023 (Next Mid-Year)", rating: "March 1, 2023 (Next Mid-Year)", color: "red" },
+                    { label: "Sept 1, 2023 (Next Annual)", rating: "Sept 1, 2023 (Next Annual)", color: "purple"}
+                ];
+
+
+                var RewardLevels = [
+                    { level: 67, multiplier: 5.82, factor: 1.0 * 3.21 },
+                    { level: 66, multiplier: 5.82, factor: 1.0 * 1.624 },
+                    { level: 65, multiplier: 5.82, factor: 1.0 },
+
+                    { level: 64, multiplier: 5.6, factor: 1.0 * 1.238 },
+                    { level: 63, multiplier: 5.6, factor: 1.0 },
+
+                    { level: 62, multiplier: 5.6, factor: 1.0 * 1.2865 },
+                    { level: 61, multiplier: 5.6, factor: 1.0 },
+
+                    { level: 60, multiplier: 5.6, factor: 1.0 * 1.24 },
+                    { level: 59, multiplier: 5.6, factor: 1.0 }
+                ];
+
+                var SlotLevels = [
+                    10, 9, 8, 7, 6, 5, 4, 3, 0
+                ]
+
+                // Spreadsheet Management
+
+                var stateMachine = function (operation, fCallback) {
+
+                    var handleOK = function () {
+                        this.hide();
+                        this.destroy();
+                    };
+
+                    var DisableCalculations = function (xApp) {
+                        // turn off calculations to speed things up
+                        xApp.ScreenUpdating = false;
+                        xApp.DisplayAlerts = false;
+
+                        for (var i = 0; i < xApp.Workbooks.Count; i++) {
+                            var xBook = xApp.Workbooks(1 + i);
+                            for (var j = 0; j < xBook.Worksheets.Count; j++) {
+                                var sheet = xBook.Worksheets(1 + j);
+                                sheet.EnableCalculation = false;
+                                sheet.EnableFormatConditionsCalculation = false;
+                            }
+                        }
+
+                    };
+
+                    var CloseDialog = function (dialog) {
+                        dialog.hide();
+                        dialog.setBody("");
+                        dialog.destroy();
+                    }
+
+                    // var DoAdjust = function (levelMin, levelMax, bucketMin, bucketMax, newBucket) {
+                    //     var j = 0;
+                    //     for (var i = 0; i < calibrator.data.records.length; i++) {
+                    //         var oData = calibrator.data.records[calibrator.data.bucketRankIndex[i]];
+                    //         if ((oData.Level >= levelMin) && (oData.Level <= levelMax)) {
+                    //             if (!isNaN(oData.BucketRank)) {
+                    //                 if ((oData.BucketRank >= bucketMin) && (oData.BucketRank < (bucketMax + 1))) {
+                    //                     oData.BucketRank = newBucket * 1.0 + (j / 1000.0);
+                    //                     oData.Bucket = Math.floor(oData.BucketRank);
+                    //                     j++;
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // };
+
+                    var Trim = function (s) {
+                        if ((undefined === s) || (typeof s !== "string")) {
+                            return s;
+                        }
+
+                        var l = 0; var r = s.length - 1;
+                        while (l < s.length && s[l] == ' ')
+                        { l++; }
+                        while (r > l && s[r] == ' ')
+                        { r -= 1; }
+                        return s.substring(l, r + 1);
+                    };
+
+                    var CRLFToBR = function (sStr) {
+                        if (typeof sStr === "string") {
+                            var re = /(\r\n)|(\n\r)|\r|\n/gim
+                            sStr = sStr.replace(re, "<br>");
+                        }
+                        return (sStr);
+                    }
+
+                    var BRToCRLF = function (sStr) {
+                        if (typeof sStr === "string") {
+                            var re = /<br>/gim
+                            sStr = sStr.replace(re, "\r");
+                        }
+                        return (sStr);
+                    }
+
+                    var NoteToText = function (sStr) {
+                        if (typeof sStr !== "string") {
+                            sStr = sStr.toString();
+                        }
+                        if ("" !== sStr) {
+                            if ("'" === sStr.charAt(0)) {
+                                sStr = sStr.slice(1);
+                            }
+                            sStr = BRToCRLF(sStr);
+                        }
+                        return (sStr);
+                    };
+
+
+                    var TextToNote = function (sStr) {
+                        if ("" !== sStr) {
+                            sStr = CRLFToBR(sStr);
+                            if ("'" !== sStr.charAt(0)) {
+                                sStr = "'" + sStr;
+                            }
+                        }
+                        return (sStr);
+                    };
+
+                    var AddManager = function (oData, Index) {
+                        var sStr = oData[Index];
+                        if ((undefined === sStr) || ("" === sStr)) {
+                            return;
+                        }
+
+                        sStr = Trim(sStr);
+
+                        for (var i = 0; i < self.managers.length; i++) {
+                            if ((Index === self.managers[i].type) && (sStr === self.managers[i].alias)) {
+                                self.managers[i].reports++;
+                                return;
+                            }
+                        }
+
+                        self.managers.push({ type: Index, alias: sStr, reports: 1 });
+                    };
+
+                    var AddManagers = function (oData) {
+                        for (var i = 0; i < ManagerTypes.length; i++) {
+                            AddManager(oData, ManagerTypes[i]);
+                        }
+                    };
+
+                    var UpdateManagers = function () {
+
+                        // find lowest layer of managers
+
+                        for (var i = 0; i < ManagerTypes.length; i++) {
+                            var arrManagers = new Array();
+                            var managerType = ManagerTypes[i];
+                            for (var j = 0; j < self.managers.length; j++) {
+                                if (ManagerTypes[i] === self.managers[j].type) {
+                                    arrManagers.push(self.managers[j].alias);
+                                }
+                            }
+
+                            if (arrManagers.length > 0) {
+                                calibrator.data.managers = arrManagers;
+                                calibrator.data.managerType = managerType;
+
+                                if (arrManagers.length > 1) {
+                                    break;
+                                }
+                            }
+                        }
+
+                        calibrator.data.managers.sort();
+
+                        // update the reports count for each manager in main record
+
+                        for (var j = 0; j < self.managers.length; j++) {
+                            for (var i = 0; i < calibrator.data.records.length; i++) {
+                                var oData = calibrator.data.records[i];
+                                if (oData.Alias === self.managers[j].alias) {
+                                    oData.Reports = self.managers[j].reports;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // see if leads are included in the spreadsheet data
+
+                        calibrator.data.containsLeads = true;
+
+                        if ("Manager" === calibrator.data.managerType) {
+
+                            calibrator.data.containsLeads = false;
+
+                            for (var i = 0; i < calibrator.data.managers.length; i++) {
+                                for (var j = 0; j < calibrator.data.records.length; j++) {
+                                    var oData = calibrator.data.records[j];
+                                    if (oData.Alias === calibrator.data.managers[i]) {
+                                        calibrator.data.containsLeads = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if ((calibrator.data.containsLeads) && ("Manager" === calibrator.data.managerType)) {
+                            calibrator.data.managers = new Array(calibrator.data.records[0].DevManager);
+                            calibrator.data.managerType = "DevManager";
+                            calibrator.data.containsLeads = false;
+                        }
+                    };
+
+                    var LoadDistribution = function (sheet) {
+                        var iCol = 1;
+                        while (undefined !== sheet.Cells(1, iCol).Value) {
+                            var sHeader = sheet.Cells(1, iCol).Value;
+
+                            iBand = -1;
+                            for (var i = 0; i < LevelBands.length; i++) {
+                                var sStr = "L" + LevelBands[i].min + "-" + LevelBands[i].max;
+                                if (sStr === sHeader) {
+                                    iBand = i;
+                                    break;
+                                }
+                            }
+
+                            if (iBand >= 0) {
+                                var peers = [];
+                                var j = 0;
+                                while (undefined !== sheet.Cells(2 + j, iCol).Value) {
+                                    peers.push({ slots: Math.floor(sheet.Cells(2 + j, iCol).Value) });
+                                    j++;
+                                }
+                                if (0 !== peers.length) {
+                                    peers.push({ label: "Not Assigned" });
+                                    LevelBands[iBand].peerBands = peers;
+                                }
+                            }
+
+                            iCol++;
+                        }
+                    };
+
+                    var SaveDistribution = function (sheet) {
+                        sheet.Range("A:Z").ClearContents();
+
+                        for (var i = 0; i < LevelBands.length; i++) {
+                            var sHeader = "L" + LevelBands[i].min + "-" + LevelBands[i].max;
+                            sheet.Cells(1, 1 + i).Value = sHeader;
+
+                            for (var j = 0; j < LevelBands[i].peerBands.length; j++) {
+                                if (undefined !== LevelBands[i].peerBands[j].slots) {
+                                    sheet.Cells(2 + j, 1 + i).Value = LevelBands[i].peerBands[j].slots;
+                                }
+                            }
+                        }
+                    }
+
+                    var arrOperations = [
+                        {
+                            op: "open", stateGraph: [
+                                  { state: "browse", status: "Select file to open" },
+                                  { state: "browsewait" },
+                                  { state: "init" },
+                                  { state: "excel", status: "Starting Excel..." },
+                                  { state: "workbook", status: "Loading workbook..." },
+                                  { state: "count", status: "Loading workbook..." },
+                                  { state: "add", status: "0% loaded..." },
+                                  { state: "analyze", status: "Analyzing..." },
+                                  { state: "done" }
+                            ]
+                        },
+                        {
+                            op: "save", stateGraph: [
+                                  { state: "init" },
+                                  { state: "excel", status: "Starting Excel..." },
+                                  { state: "workbook", status: "Loading workbook..." },
+                                  { state: "count", status: "Loading workbook..." },
+                                  { state: "initsave", status: "Saving..." },
+                                  { state: "save", status: "0% saved..." },
+                                  { state: "done" }
+                            ]
+                        },
+                        {
+                            op: "saveas", stateGraph: [
+                                { state: "name", status: "Enter file name" },
+                                { state: "namewait" },
+                                { state: "init" },
+                                { state: "excel", status: "Starting Excel..." },
+                                { state: "initsaveas", status: "Creating workbook..." },
+                                { state: "saveas", status: "0% saved..." },
+                                { state: "saveasclose", status: "Closing workbook..." },
+                                { state: "done" }
+                            ]
+                        },
+                        {
+                            op: "export", stateGraph: [
+                                { state: "name", status: "Enter file name" },
+                                { state: "namewait" },
+                                { state: "init" },
+                                { state: "excel", status: "Starting Excel..." },
+                                { state: "initexport", status: "Creating workbook..." },
+                                { state: "export", status: "0% saved..." },
+                                { state: "exportclose", status: "Closing workbook..." },
+                                { state: "done" }
+                            ]
+                        }
+                    ];
+
+                    var GetFirstState = function (opObj) {
+                        return (opObj.stateGraph[0].state);
+                    };
+
+                    var GetNextState = function (opObj, currentState) {
+                        for (var i = 0; i < opObj.stateGraph.length; i++) {
+                            if (currentState === opObj.stateGraph[i].state) {
+                                return (opObj.stateGraph[i + 1].state);
+                            }
+                        }
+                    };
+
+                    var GetStateString = function (opObj, state) {
+                        for (var i = 0; i < opObj.stateGraph.length; i++) {
+                            if (state === opObj.stateGraph[i].state) {
+                                if (undefined === opObj.stateGraph[i].status) {
+                                    return ("");
+                                }
+                                else {
+                                    return (opObj.stateGraph[i].status);
+                                }
+                            }
+                        }
+                    };
+
+                    var GetOpObj = function (op) {
+                        for (var i = 0; i < arrOperations.length; i++) {
+                            if (op === arrOperations[i].op) {
+                                return (arrOperations[i]);
+                            }
+                        }
+                    }
+
+                    var arrExportCols = [
+                        { header: "PERN", key: "PERN" },
+                        { header: "Alias", key: "Alias" },
+                        { header: "Performance Rating", key: "Bucket" },
+                        { header: "Promo (Y/N)", key: "Promo", formatter: function (value) { return ((value === calibrator.data.promos[0].rating) ? "Y" : "N"); } },
+                        { header: "HiPo ID" },
+                        { header: "Non-Promo Reason", key: "Promo", formatter: function (value) { return ((value === calibrator.data.promos[0].rating) ? "" : "Employee has not yet demonstrated the skills/competencies required for the next level"); } },
+                        { header: "Promo Justification Comment" },
+                        { header: "Key Talent" }
+                    ];
+
+                    var self = new Object();
+
+                    self.fCallback = fCallback;
+                    self.records = new Array();
+                    self.managers = new Array();
+
+                    if ("save" === operation) {
+                        for (var i = 0; i < columnDefs.length; i++) {
+                            if ((undefined !== columnDefs[i].write) && (-1 === columnDefs[i].column)) {
+                                operation = "saveas";
+                                break;
+                            }
+                        }
+                    }
+
+                    self.opObj = GetOpObj(operation);
+                    self.state = GetFirstState(self.opObj);
+
+                    switch (operation) {
+                        case "open":
+                            self.bSaving = false;
+                            break;
+
+                        case "save":
+                            self.bSaving = true;
+                            self.sPath = calibrator.data.path;
+                            break;
+                    }
+
+                    //start an anonymous timer
+                    self.timer = window.setInterval(function () {
+                        switch (self.state) {
+                            case "browse":
+                                self.dialog = new YAHOO.widget.Panel("browsedialog", { width: "300px", fixedcenter: true, close: false, draggable: false, zindex: 4, modal: true, visible: false });
+
+                                var parent = document.createElement("div");
+
+                                var form = document.createElement("form");
+                                form.name = "browseForm";
+                                form.style.marginTop = "10px";
+
+                                var input = document.createElement("input");
+                                input.type = "file";
+                                input.name = "fileInput";
+                                input.style.height = "24px";
+                                input.style.width = "280px";
+
+                                form.appendChild(input);
+                                parent.appendChild(form);
+
+                                self.dialog.setBody(parent);
+                                self.dialog.render(document.body);
+                                self.dialog.show();
+
+                                self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                self.state = "browsewait";
+                                break;
+
+                            case "browsewait":
+                                try {
+                                    self.sPath = document.browseForm.fileInput.value;
+                                    if ("" !== self.sPath) {
+                                        CloseDialog(self.dialog);
+                                        self.dialog = null;
+                                        self.state = GetNextState(self.opObj, self.state);
+                                    }
+                                }
+                                catch (err) {
+                                    self.error = "To run Calibrator you must use IE9 with Intranet security set to Medium.";
+                                    self.state = "error";
+                                }
+                                break;
+
+                            case "name":
+                                self.dialog = new YAHOO.widget.Panel("namedialog", { width: "300px", fixedcenter: true, close: false, draggable: false, zindex: 4, modal: true, visible: false });
+
+                                var parent = document.createElement("div");
+
+                                var form = document.createElement("form");
+                                form.name = "browseForm";
+                                form.style.marginTop = "10px";
+
+                                var input = document.createElement("input");
+                                input.type = "text";
+                                input.name = "textInput";
+                                input.style.height = "24px";
+                                input.style.width = "280px";
+                                form.appendChild(input);
+
+                                var div = document.createElement("div");
+                                div.style.height = "30px";
+                                div.style.marginTop = "20px";
+
+                                input = document.createElement("input");
+                                input.type = "button";
+                                input.value = "Cancel";
+                                input.style.marginLeft = "10px";
+                                input.style.float = "right";
+                                input.name = "cancelButton";
+                                input.onclick = function () {
+                                    CloseDialog(self.dialog);
+                                    self.dialog = null;
+                                    self.state = "done";
+                                }
+                                div.appendChild(input);
+
+                                input = document.createElement("input");
+                                input.type = "button";
+                                input.value = "OK";
+                                input.style.float = "right";
+                                input.name = "okButton";
+                                input.onclick = function () {
+                                    var oText = browseForm.elements["textInput"];
+                                    self.fileName = oText.value;
+                                    if ("" === self.fileName) {
+                                        self.error = "Invalid file name";
+                                        self.state = "error";
+                                    } else {
+                                        CloseDialog(self.dialog);
+                                        self.dialog = null;
+                                        self.state = GetNextState(self.opObj, self.state);
+                                    }
+                                }
+                                div.appendChild(input);
+
+                                form.appendChild(div);
+                                parent.appendChild(form);
+
+                                self.dialog.setBody(parent);
+                                self.dialog.render(document.body);
+                                self.dialog.show();
+                                self.fileName = "";
+
+                                self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                self.state = "namewait";
+                                break;
+
+                            case "namewait":
+                                break;
+
+                            case "init":
+                                self.dialog = new YAHOO.widget.Panel("progressdialog", { width: "240px", fixedcenter: true, close: false, draggable: false, zindex: 4, modal: true, visible: false });
+                                self.dialog.setBody('<img src="http://l.yimg.com/a/i/us/per/gr/gp/rel_interstitial_loading.gif" />');
+                                self.dialog.render(document.body);
+                                self.dialog.show();
+
+                                self.state = GetNextState(self.opObj, self.state);
+                                self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                break;
+
+                            case "excel":
+                                try {
+                                    self.xApp = new ActiveXObject("Excel.Application");
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                }
+                                catch (err) {
+                                    self.error = "Could not start Excel - please verify it is installed properly.";
+                                    self.state = "error";
+                                }
+                                break;
+
+                            case "workbook":
+                                try {
+                                    self.xApp.Workbooks.Open(self.sPath, 0, !self.bSaving);
+                                    if ((self.bSaving) && (self.xApp.ActiveWorkbook.ReadOnly)) { // tried to open for write but still read-only, so another app has it open
+                                        self.error = "Could not save spreadsheet because it is already open by another application.";
+                                        self.state = "error";
+                                    }
+                                    else {
+                                        var index = -1;
+                                        for (var i = 1; i <= self.xApp.Sheets.Count; i++) {
+                                            var sheet = self.xApp.Sheets.Item(i);
+                                            if ("Table1" === sheet.Name) {
+                                                self.xSheet = sheet;
+                                                index = i;
+                                            } else if ("Distribution" === sheet.Name) {
+                                                calibrator.view.menuBar.showRewardRatings = true;
+                                                if (self.bSaving) {
+                                                    SaveDistribution(sheet);
+                                                } else {
+                                                    LoadDistribution(sheet);
+                                                }
+                                            }
+                                        }
+
+                                        if (-1 === index) {
+                                            self.error = 'Could not find a sheet named "Table1" in the spreadsheet - this sheet holds the calibration data and must be present.';
+                                            self.state = "error";
+                                        }
+                                        else {
+                                            var excelRange = self.xSheet.usedrange;
+                                            self.vbArr = new VBArray(excelRange.value(10));
+                                            self.state = GetNextState(self.opObj, self.state);
+                                            self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                        }
+                                    }
+                                }
+                                catch (err) {
+                                    self.error = "Could not open spreadsheet:<p>" + err + "</p>";
+                                    self.state = "error";
+                                }
+
+                                if (("error" === self.state) || (!self.bSaving)) {
+                                    self.xSheet = null;
+                                    if (self.xApp.Workbooks.Count > 0) {
+                                        self.xApp.ActiveWorkbook.Close(false);
+                                    }
+                                    self.xApp.Quit();
+                                    self.xApp = null;
+                                }
+                                break;
+
+                            case "count":
+
+                                self.firstRow = 2;
+                                while (self.firstRow <= 3) {
+
+                                    for (var i = 0; i < columnDefs.length; i++) {
+                                        columnDefs[i].column = -1;
+                                    }
+
+                                    var iCol = 1;
+                                    var iRow = self.firstRow - 1;
+                                    var iCustom = 0;
+                                    while ((iCol <= self.vbArr.ubound(2)) && (undefined !== self.vbArr.getItem(iRow, iCol))) {
+                                        var sCellValue = self.vbArr.getItem(iRow, iCol);
+
+                                        if (typeof sCellValue !== "string") {
+                                            sCellValue = sCellValue.toString();
+                                        }
+
+                                        // search for column
+                                        var bFound = false;
+                                        for (var i = 0; i < columnDefs.length; i++) {
+                                            if (sCellValue.substr(0, columnDefs[i].header.length) === columnDefs[i].header) {
+                                                if (-1 === columnDefs[i].column) {
+                                                    columnDefs[i].column = iCol;
+                                                    bFound = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        // column not found - check for custom columns and add them
+                                        if ((!bFound) && (sCellValue.length > 0)) {
+                                            if ("*" === sCellValue[0]) {
+                                                columnDefs.push({ key: "Custom" + iCustom, label: CRLFToBR(sCellValue.substr(1)), formatter: "number", sortable: true, header: sCellValue, column: iCol });
+                                                iCustom++;
+                                            }
+                                            else if ("^" === sCellValue[0]) {
+                                                columnDefs.push({ key: "Custom" + iCustom, label: CRLFToBR(sCellValue.substr(1)), formatter: "text", sortable: false, header: sCellValue, column: iCol });
+                                                iCustom++;
+                                            }
+                                            else if ("~" === sCellValue[0]) {
+                                                columnDefs.push({ key: "Custom" + iCustom, label: CRLFToBR(sCellValue.substr(1)), formatter: "link", sortable: false, header: sCellValue, column: iCol });
+                                                iCustom++;
+                                            }
+                                        }
+
+                                        iCol++;
+                                    }
+                                    self.lastColumn = iCol;
+
+                                    self.error = "";
+                                    for (var i = 0; i < columnDefs.length; i++) {
+                                        if ((-1 === columnDefs[i].column) && (undefined !== columnDefs[i].required) && (columnDefs[i].required)) {
+                                            self.error += columnDefs[i].header + "<br>";
+                                        }
+                                    }
+
+                                    if ("" === self.error) {
+                                        break;          // found all required columns
+                                    }
+                                    else {
+                                        self.firstRow++;
+                                    }
+                                }
+
+                                if ("" != self.error) {
+                                    self.error = "The following required columns were not found:<p style='margin-left: 20px'>" + self.error + "</p>Please check the spreadsheet.";
+                                    self.state = "error";
+                                }
+                                else {
+                                    var iRow = self.firstRow;
+                                    while ((iRow <= self.vbArr.ubound(1)) &&
+                                    (!(undefined === self.vbArr.getItem(iRow, 1)))) {
+                                        iRow++;
+                                    }
+                                    self.iRowsTotal = iRow - self.firstRow;
+                                    self.iRowsLoaded = 0;
+                                    self.iChunkSize = Math.floor(self.iRowsTotal / 10);
+                                    if (0 === self.iChunkSize) {
+                                        self.iChunkSize = 1;
+                                    }
+
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                }
+                                break;
+
+                            case "add":
+                                if (self.iRowsLoaded >= self.iRowsTotal) {
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                    break;
+                                }
+                                else {
+                                    var iCount = self.iRowsTotal - self.iRowsLoaded;
+                                    if (iCount > self.iChunkSize) {
+                                        iCount = self.iChunkSize;
+                                    }
+
+                                    for (var i = 0; i < iCount; i++) {
+                                        var rec = new Object();
+
+                                        for (var j = 0; j < columnDefs.length; j++) {
+                                            var sCellValue = "";
+                                            if (-1 !== columnDefs[j].column) {
+                                                sCellValue = self.vbArr.getItem(self.firstRow + self.iRowsLoaded + i, columnDefs[j].column);
+                                            }
+                                            if (!(undefined === columnDefs[j].convertPct)) {
+                                                sCellValue = parseFloat(sCellValue);
+                                                if (isNaN(sCellValue)) {
+                                                    sCellValue = "";
+                                                }
+                                                else if (sCellValue < 1) {
+                                                    sCellValue = (sCellValue * 100) + "%";
+                                                }
+                                                else {
+                                                    sCellValue = sCellValue + "%";
+                                                }
+                                            }
+                                            else if ("number" == columnDefs[j].formatter) {
+                                                sCellValue = parseFloat(sCellValue);
+                                            }
+                                            else if (undefined !== columnDefs[j].note) {
+                                                if (undefined !== sCellValue) {
+                                                    sCellValue = NoteToText(sCellValue);
+                                                }
+                                            }
+
+                                            if (undefined === sCellValue) {
+                                                sCellValue = "";
+                                            }
+                                            rec[columnDefs[j].key] = sCellValue;
+                                        }
+
+                                        self.records[self.records.length] = rec;
+                                    }
+
+                                    self.iRowsLoaded += iCount;
+                                }
+
+                                self.dialog.setHeader(Math.floor((self.iRowsLoaded / self.iRowsTotal) * 100) + "% loaded...");
+                                break;
+
+                            case "analyze":
+
+                                calibrator.data.records = self.records;
+                                self.records = null;
+                                calibrator.data.path = self.sPath;
+
+                                // see if bucket rank is set for any row
+                                var bFound = false;
+                                for (var i = 0; i < calibrator.data.records.length; i++) {
+                                    var oData = calibrator.data.records[i];
+                                    if (!(isNaN(oData.BucketRank))) {
+                                        bFound = true;
+                                        break;
+                                    }
+                                }
+
+                                bFound = true; // received feedback to just keep bucket at Unassigned instead of using previous rating
+
+                                for (var i = 0; i < calibrator.data.records.length; i++) {
+                                    var oData = calibrator.data.records[i];
+
+                                    if (bFound) {
+                                        oData.Bucket = calibrator.data.calculateBucket(oData.BucketRank); // calibrator has been used before, so set Bucket == BucketRank
+                                    } else {
+                                        if (!isNaN(oData.Minus1Rating)) {
+                                            oData.BucketRank = 10.0 + (oData.Minus1Rating / 1000.0); // calibrator has not been used before, so use previous bucket as starting point
+                                            oData.Bucket = calibrator.data.calculateBucket(oData.BucketRank);
+                                        }
+                                    }
+
+                                    // generate LevelBand based on Level
+                                    oData.LevelBand = LevelBands.length;
+                                    for (var j = 0; j < LevelBands.length; j++) {
+                                        if ((oData.Level >= LevelBands[j].min) && (oData.Level <= LevelBands[j].max)) {
+                                            oData.LevelBand = j;
+                                            break;
+                                        }
+                                    }
+
+                                    if (oData.Level > calibrator.data.maxLevel) {
+                                        calibrator.data.maxLevel = oData.Level;
+                                    }
+                                    if (oData.Level < calibrator.data.minLevel) {
+                                        calibrator.data.minLevel = oData.Level;
+                                    }
+
+                                    oData.Name = Trim(oData.Name);  // names could have trailing spaces
+                                    oData.VP = Trim(oData.VP);
+                                    oData.Director = Trim(oData.Director);
+                                    oData.DevManager = Trim(oData.DevManager);
+                                    oData.Manager = Trim(oData.Manager);
+
+                                    oData.Reports = "";             // assume no reports
+
+                                    AddManagers(oData);
+                                }
+
+                                UpdateManagers();
+
+                                calibrator.data.sortAlias();
+                                calibrator.data.sortBucketRank();
+
+                                if (!bFound) {
+                                    // normalize bucket ranks to be 1-N for each bucket in a band
+                                    var lastBand = -1;
+                                    var lastBucket = -1;
+                                    var iCount = 0;
+                                    for (var i = 0; i < calibrator.data.length() ; i++) {
+                                        var oData = calibrator.data.rsBucketRank(i);
+
+                                        if (lastBand !== oData.LevelBand) {
+                                            lastBand = oData.LevelBand;
+                                            lastBucket = -1;
+                                        }
+
+                                        if (!isNaN(oData.BucketRank)) {
+
+                                            if (lastBucket !== Math.floor(oData.BucketRank)) {
+                                                lastBucket = Math.floor(oData.BucketRank);
+                                                iCount = 0;
+                                            }
+
+                                            oData.BucketRank = lastBucket * 1.0 + (iCount / 1000.0);
+                                            oData.Bucket = calibrator.data.calculateBucket(oData.BucketRank);
+                                            iCount++;
+                                        }
+                                    }
+                                }
+
+                                // make sure max and min are within level band bounds
+                                if (calibrator.data.maxLevel > LevelBands[0].max) {
+                                    calibrator.data.maxLevel = LevelBands[0].max;
+                                }
+                                if (calibrator.data.minLevel < LevelBands[LevelBands.length - 1].min) {
+                                    calibrator.data.minLevel = LevelBands[LevelBands.length - 1].min;
+                                }
+
+                                // remove level bands that are not present in the data set
+                                for (var i = LevelBands.length - 1; i >= 0; i--) {
+                                    if ((LevelBands[i].min > calibrator.data.maxLevel) || (LevelBands[i].max < calibrator.data.minLevel)) {
+                                        LevelBands.splice(i, 1);
+                                    }
+                                }
+
+                                self.state = GetNextState(self.opObj, self.state);
+                                self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                break;
+
+                            case "initsave":
+
+                                DisableCalculations(self.xApp);
+
+                                // find alias column
+                                for (var i = 0; i < columnDefs.length; i++) {
+                                    if ("Alias" === columnDefs[i].key) {
+                                        self.aliasCol = columnDefs[i].column;
+                                        break;
+                                    }
+                                }
+
+                                // create any missing writable columns
+                                for (var i = 0; i < columnDefs.length; i++) {
+                                    if ((!(undefined === columnDefs[i].write)) && (-1 === columnDefs[i].column)) {
+                                        columnDefs[i].column = self.lastColumn;
+                                        self.lastColumn++;
+
+                                        self.xSheet.Cells(self.firstRow - 1, columnDefs[i].column).Value = columnDefs[i].header;
+                                    }
+                                }
+
+                                self.state = GetNextState(self.opObj, self.state);
+                                self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                break;
+
+                            case "save":
+                                if (self.iRowsLoaded >= self.iRowsTotal) {
+                                    self.xSheet = null;
+                                    self.xApp.ActiveWorkbook.Close(true);
+                                    self.xApp.Workbooks.Close();
+                                    self.xApp.Quit();
+                                    self.xApp = null;
+
+                                    calibrator.data.dirty = false;
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                }
+                                else {
+                                    var iCount = self.iRowsTotal - self.iRowsLoaded;
+                                    if (iCount > self.iChunkSize) {
+                                        iCount = self.iChunkSize;
+                                    }
+
+                                    for (var i = 0; i < iCount; i++) {
+                                        var sAlias = self.vbArr.getItem(self.firstRow + self.iRowsLoaded + i, self.aliasCol);
+                                        var oData = calibrator.data.rsAlias(calibrator.data.findAlias(sAlias));
+
+                                        for (var j = 0; j < columnDefs.length; j++) {
+                                            if ((!(undefined === columnDefs[j].write)) && (-1 !== columnDefs[j].column)) {
+                                                var sCellValue = oData[columnDefs[j].key];
+                                                if ("number" == columnDefs[j].formatter) {
+                                                    if (isNaN(sCellValue)) {
+                                                        sCellValue = "";
+                                                    }
+                                                }
+                                                else if (undefined !== columnDefs[j].note) {
+                                                    if (undefined !== sCellValue) {
+                                                        sCellValue = TextToNote(sCellValue);
+                                                    }
+                                                }
+
+                                                self.xSheet.Cells(self.firstRow + self.iRowsLoaded + i, columnDefs[j].column).Value = sCellValue;
+                                            }
+                                        }
+
+                                    }
+
+                                    self.iRowsLoaded += iCount;
+                                }
+
+                                self.dialog.setHeader(Math.floor((self.iRowsLoaded / self.iRowsTotal) * 100) + "% saved...");
+                                break;
+
+                            case "initsaveas":
+
+                                try {
+                                    DisableCalculations(self.xApp);
+
+                                    self.xBook = self.xApp.Workbooks.Add(1);
+                                    self.xBook.Sheets(1).Name = "Table1";
+                                    self.xSheet = self.xBook.Sheets("Table1");
+
+                                    for (var i = 0; i < columnDefs.length; i++) {
+                                        self.xSheet.Cells(1, 1 + i).Value = columnDefs[i].header;
+                                        self.xSheet.Cells(1, 1 + i).Interior.ColorIndex = 1;    // black
+                                        self.xSheet.Cells(1, 1 + i).Font.ColorIndex = 2;        // white
+                                    }
+
+                                    self.iRowsTotal = calibrator.data.records.length;
+                                    self.iRowsLoaded = 0;
+                                    self.iChunkSize = Math.floor(self.iRowsTotal / 10);
+                                    if (0 === self.iChunkSize) {
+                                        self.iChunkSize = 1;
+                                    }
+
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                }
+                                catch (err) {
+                                    self.xSheet = null;
+                                    if (null !== self.xBook) {
+                                        self.xBook.Close(false);
+                                        self.xBook = null;
+                                    }
+                                    self.xApp.Quit();
+                                    self.xApp = null;
+
+                                    self.error = "Could not create worksheet: <p>" + err + "</p>";
+                                    self.state = "error";
+                                }
+                                break;
+
+                            case "saveas":
+                                if (self.iRowsLoaded >= self.iRowsTotal) {
+                                    self.xSheet.usedrange.EntireColumn.AutoFit();
+                                    self.xSheet = null;
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                }
+                                else {
+                                    var iCount = self.iRowsTotal - self.iRowsLoaded;
+                                    if (iCount > self.iChunkSize) {
+                                        iCount = self.iChunkSize;
+                                    }
+
+                                    for (var i = 0; i < iCount; i++) {
+                                        var oData = calibrator.data.records[self.iRowsLoaded + i];
+
+                                        for (var j = 0; j < columnDefs.length; j++) {
+                                            var key = columnDefs[j].key;
+                                            if ((undefined !== key) && (undefined !== oData[key])) {
+
+                                                var sCellValue = oData[key];
+                                                if ("number" == columnDefs[j].formatter) {
+                                                    if (isNaN(sCellValue)) {
+                                                        sCellValue = "";
+                                                    }
+                                                }
+                                                else if (undefined !== columnDefs[j].note) {
+                                                    if (undefined !== sCellValue) {
+                                                        sCellValue = TextToNote(sCellValue);
+                                                    }
+                                                }
+
+                                                if ("" !== sCellValue) {
+                                                    self.xSheet.Cells(2 + self.iRowsLoaded + i, 1 + j).Value = sCellValue;
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                    self.iRowsLoaded += iCount;
+                                }
+                                self.dialog.setHeader(Math.floor((self.iRowsLoaded / self.iRowsTotal) * 100) + "% saved...");
+                                break;
+
+                            case "saveasclose":
+                                var iIndex = calibrator.data.path.lastIndexOf("\\");
+                                var sPath = calibrator.data.path.substring(0, iIndex);
+
+                                iIndex = self.fileName.lastIndexOf(".");
+                                if (-1 === iIndex) {
+                                    self.fileName += ".xlsx";
+                                }
+
+                                sPath += "\\" + self.fileName;
+
+                                try {
+                                    var xlWorkbookDefault = 51;
+                                    self.xBook.SaveAs(sPath, xlWorkbookDefault);
+                                    self.xBook.Close(true);
+
+                                    calibrator.data.path = sPath;
+
+                                    self.error = "Calibration data exported to \"" + sPath + "\"";
+                                    self.state = "error";
+                                }
+                                catch (err) {
+                                    self.xBook.Close(false);
+                                    self.error = "Could not create spreadsheet: <p>" + err + "</p>";
+                                    self.state = "error";
+                                }
+
+                                self.xBook = null;
+                                self.xApp.Workbooks.Close();
+                                self.xApp.Quit();
+                                self.xApp = null;
+                                break;
+
+                            case "initexport":
+
+                                try {
+                                    DisableCalculations(self.xApp);
+
+                                    self.xBook = self.xApp.Workbooks.Add(1);
+                                    self.xBook.Sheets(1).Name = "Calibration Data Upload";
+                                    self.xSheet = self.xBook.Sheets("Calibration Data Upload");
+
+                                    for (var i = 0; i < arrExportCols.length; i++) {
+                                        self.xSheet.Cells(1, 1 + i).Value = arrExportCols[i].header;
+                                    }
+
+                                    self.iRowsTotal = calibrator.data.records.length;
+                                    self.iRowsLoaded = 0;
+                                    self.iChunkSize = Math.floor(self.iRowsTotal / 10);
+                                    if (0 === self.iChunkSize) {
+                                        self.iChunkSize = 1;
+                                    }
+
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                }
+                                catch (err) {
+                                    self.xSheet = null;
+                                    if (null !== self.xBook) {
+                                        self.xBook.Close(false);
+                                        self.xBook = null;
+                                    }
+                                    self.xApp.Quit();
+                                    self.xApp = null;
+
+                                    self.error = "Could not create worksheet: <p>" + err + "</p>";
+                                    self.state = "error";
+                                }
+                                break;
+
+                            case "export":
+                                if (self.iRowsLoaded >= self.iRowsTotal) {
+                                    self.xSheet = null;
+                                    self.state = GetNextState(self.opObj, self.state);
+                                    self.dialog.setHeader(GetStateString(self.opObj, self.state));
+                                }
+                                else {
+                                    var iCount = self.iRowsTotal - self.iRowsLoaded;
+                                    if (iCount > self.iChunkSize) {
+                                        iCount = self.iChunkSize;
+                                    }
+
+                                    for (var i = 0; i < iCount; i++) {
+                                        var oData = calibrator.data.records[self.iRowsLoaded + i];
+
+                                        for (var j = 0; j < arrExportCols.length; j++) {
+                                            var key = arrExportCols[j].key;
+                                            if ((undefined !== key) && (undefined !== oData[key])) {
+
+                                                var cellValue = oData[key];
+                                                if ((typeof cellValue === "number") && (isNaN(cellValue))) {
+                                                    cellValue = "";
+                                                }
+
+                                                if (undefined !== arrExportCols[j].formatter) {
+                                                    cellValue = arrExportCols[j].formatter(cellValue);
+                                                }
+                                                if ("" !== cellValue) {
+                                                    self.xSheet.Cells(2 + self.iRowsLoaded + i, 1 + j).Value = cellValue;
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                    self.iRowsLoaded += iCount;
+                                }
+
+                                self.dialog.setHeader(Math.floor((self.iRowsLoaded / self.iRowsTotal) * 100) + "% saved...");
+                                break;
+
+                            case "exportclose":
+                                var iIndex = calibrator.data.path.lastIndexOf("\\");
+                                var sPath = calibrator.data.path.substring(0, iIndex);
+
+                                iIndex = self.fileName.lastIndexOf(".");
+                                if (-1 === iIndex) {
+                                    self.fileName += ".xml";
+                                }
+
+                                sPath += "\\" + self.fileName;
+
+                                try {
+                                    var xlXMLSpreadsheet = 46;
+                                    self.xBook.SaveAs(sPath, xlXMLSpreadsheet);
+                                    self.xBook.Close(true);
+
+                                    self.error = "Calibration data exported to \"" + sPath + "\"";
+                                    self.state = "error";
+                                }
+                                catch (err) {
+                                    self.xBook.Close(false);
+                                    self.error = "Could not create spreadsheet: <p>" + err + "</p>";
+                                    self.state = "error";
+                                }
+
+                                self.xBook = null;
+                                self.xApp.Workbooks.Close();
+                                self.xApp.Quit();
+                                self.xApp = null;
+                                break;
+
+                            case "error":
+                                self.vbArr = null;
+                                window.clearInterval(self.timer);
+
+                                self.dialog.hide();
+                                self.dialog.destroy();
+                                self.dialog = null;
+
+                                self.dialog = new YAHOO.widget.SimpleDialog("errordialog",
+                                             {
+                                                 width: "300px",
+                                                 fixedcenter: true,
+                                                 visible: false,
+                                                 draggable: false,
+                                                 modal: true,
+                                                 close: false,
+                                                 text: self.error,
+                                                 xicon: YAHOO.widget.SimpleDialog.ICON_ALARM,
+                                                 constraintoviewport: true,
+                                                 buttons: [{ text: "OK", handler: handleOK, isDefault: true }]
+                                             });
+                                self.dialog.setHeader("Message");
+                                self.dialog.render(document.body);
+                                self.dialog.show();
+                                break;
+
+                            case "done":
+
+                                self.vbArr = null;
+                                window.clearInterval(self.timer);
+
+                                if ((undefined !== self.dialog) && (null !== self.dialog)) {
+                                    self.dialog.hide();
+                                    self.dialog.destroy();
+                                    self.dialog = null;
+                                }
+
+                                if (undefined !== self.fCallback) {
+                                    self.fCallback();
+                                }
+                                break;
+                        }
+                    }, 10);
+                };
+
+                var sortAliasIndex = function () {
+
+                    var arr = new Array();
+                    for (var i = 0; i < calibrator.data.records.length; i++) {
+                        arr[i] = i;
+                    }
+
+                    arr.sort(function (left, right) {
+                        if (calibrator.data.records[left].Alias < calibrator.data.records[right].Alias) {
+                            return -1;
+                        }
+                        else if (calibrator.data.records[left].Alias === calibrator.data.records[right].Alias) {
+                            return 0;
+                        }
+                        else {
+                            return 1;
+                        }
+                    });
+
+                    calibrator.data.aliasIndex = arr;
+                };
+
+                var binarySearchAlias = function (sAlias) {
+
+                    var left = -1, right = calibrator.data.records.length, mid;
+
+                    while (right - left > 1) {
+                        mid = (left + right) >>> 1;
+                        if (calibrator.data.records[calibrator.data.aliasIndex[mid]].Alias < sAlias) {
+                            left = mid;
+                        }
+                        else {
+                            right = mid;
+                        }
+                    }
+
+                    if (calibrator.data.records[calibrator.data.aliasIndex[right]].Alias != sAlias) {
+                        return -(right + 1);
+                    }
+                    else {
+                        return right;
+                    }
+                };
+
+                function CompareFloat(leftValue, rightValue) {
+                    if ((isNaN(leftValue)) && (isNaN(rightValue))) {
+                        return 0;
+                    }
+                    else if (isNaN(leftValue)) {
+                        return 1;
+                    }
+                    else if (isNaN(rightValue)) {
+                        return -1;
+                    }
+                    else if (leftValue < rightValue) {
+                        return -1;
+                    }
+                    else if (leftValue === rightValue) {
+                        return 0;
+                    }
+                    else {
+                        return 1;
+                    }
+                }
+
+                var sortBucketRankIndex = function () {
+
+                    var arr = new Array();
+                    for (var i = 0; i < calibrator.data.records.length; i++) {
+                        arr[i] = i;
+                    }
+
+                    arr.sort(function (left, right) {
+
+                        var leftValue = calibrator.data.records[left].LevelBand;
+                        var rightValue = calibrator.data.records[right].LevelBand;
+
+                        if (leftValue < rightValue) {
+                            return -1;
+                        }
+                        else if (leftValue > rightValue) {
+                            return 1;
+                        }
+                        else {
+                            return (CompareFloat(calibrator.data.records[left].BucketRank, calibrator.data.records[right].BucketRank));
+                        }
+                    });
+
+                    calibrator.data.bucketRankIndex = arr;
+                };
+
+                var getRewardFactor = function (level) {
+                    for (var i = 0; i < RewardLevels.length; i++) {
+                        if (level === RewardLevels[i].level) {
+                            return (RewardLevels[i].factor);
+                        }
+                    }
+
+                    return (0.0);
+                };
+
+                var getRewardMultiplier = function (level) {
+                    for (var i = 0; i < RewardLevels.length; i++) {
+                        if (level === RewardLevels[i].level) {
+                            return (RewardLevels[i].multiplier);
+                        }
+                    }
+
+                    return (0.0);
+                };
+
+                var setActivePeerBands = function (level) {
+                    for (var i = 0; i < LevelBands.length; i++) {
+                        if ((level >= LevelBands[i].min) && (level <= LevelBands[i].max)) {
+                            calibrator.data.peerBands = LevelBands[i].peerBands;
+                            return;
+                        }
+                    }
+                };
+
+                var loadData = function (fCallback) {
+                    stateMachine("open", fCallback);
+                };
+
+                var saveData = function (fCallback) {
+                    stateMachine("save", fCallback);
+                };
+
+                var saveAsData = function (fCallback) {
+                    stateMachine("saveas", fCallback);
+                };
+
+                var exportData = function (fCallback) {
+                    stateMachine("export", fCallback);
+                };
+
+                return {
+                    columns: columnDefs,
+                    records: new Array(),
+                    length: function () { return calibrator.data.records.length; },
+                    dirty: false,
+                    managers: new Array(),
+                    managerColors: ManagerColors,
+                    managerType: "",
+                    containsLeads: false,
+                    maxLevel: -1,
+                    minLevel: Number.MAX_VALUE,
+                    levelBands: LevelBands,
+                    promos: Promos,
+                    peerBands: PeerBands,
+                    slots: SlotLevels,
+                    getRewardFactorForLevel: getRewardFactor,
+                    getRewardMultiplierForLevel: getRewardMultiplier,
+                    setActivePeerBandsForLevel: setActivePeerBands,
+                    open: loadData,
+                    save: saveData,
+                    saveAs: saveAsData,
+                    saveXML: exportData,
+                    findAlias: binarySearchAlias,
+                    sortAlias: sortAliasIndex,
+                    sortBucketRank: sortBucketRankIndex,
+                    rsAlias: function (i) { return calibrator.data.records[calibrator.data.aliasIndex[i]]; },
+                    rsBucketRank: function (i) { return calibrator.data.records[calibrator.data.bucketRankIndex[i]]; },
+                    calculateBucket: function(bucketRank) { return 220 - Math.floor(bucketRank) * 20; }
+                };
+            }();
+
+
+            // View Object
+
+            calibrator.view = function () {
+
+                // Filters
+
+                function NoFilter() {
+                    this.validItem = function (oData) {
+                        return (true);
+                    }
+                }
+
+                function LevelFilter(iMinLevel, iMaxLevel) {
+
+                    if (undefined === iMaxLevel) {
+                        this.iMinLevel = iMinLevel;
+                        this.iMaxLevel = iMinLevel;
+                    }
+                    else {
+                        this.iMinLevel = iMinLevel;
+                        this.iMaxLevel = iMaxLevel;
+                    }
+
+                    this.validItem = function (oData) {
+                        return ((oData.Level >= this.iMinLevel) && (oData.Level <= this.iMaxLevel));
+                    }
+                }
+
+                function BucketFilter(iBucket) {
+                    this.iBucket = iBucket;
+
+                    this.validItem = function (oData) {
+                        return ((!isNaN(oData.BucketRank)) && (oData.BucketRank >= this.iBucket) && (oData.BucketRank < (this.iBucket + 1)));
+                    }
+                }
+
+                function InvalidBucketFilter() {
+                    this.validItem = function (oData) {
+                        return ((isNaN(oData.BucketRank)) || (oData.BucketRank < 1) || (oData.BucketRank > 5));
+                    }
+                }
+
+                function ManagerFilter(sManager, managerIndex) {
+                    this.sManager = sManager;
+                    this.managerIndex = managerIndex;
+
+                    this.validItem = function (oData) {
+                        return (oData[this.managerIndex] === this.sManager);
+                    }
+                }
+
+                // Tiles
+
+                function Tile() {
+
+                    this.leftValue = function (oData) {
+                        return oData.Alias;
+                    }
+
+                    this.rightValue = function (oData) {
+                        return oData.Level;
+                    }
+
+                    this.color = function (oData) {
+                        for (var i = 0; i < this.arrRatings.length; i++) {
+                            if (this.arrRatings[i].rating === oData[this.ratingIndex]) {
+                                return this.arrRatings[i].color;
+                            }
+                        }
+
+                        return "white";
+                    }
+
+                    this.clearTotalCounters = function () {
+                        for (var i = 0; i < this.arrRatings.length; i++) {
+                            this.arrRatings[i].total = 0;
+                        }
+                    }
+
+                    this.clearSubtotalCounters = function () {
+                        for (var i = 0; i < this.arrRatings.length; i++) {
+                            this.arrRatings[i].subtotal = 0;
+                        }
+                    }
+
+                    this.incrementCounters = function (oData) {
+                        for (var i = 0; i < this.arrRatings.length; i++) {
+                            if (this.arrRatings[i].rating === oData[this.ratingIndex]) {
+                                this.arrRatings[i].total++;
+                                this.arrRatings[i].subtotal++;
+                            }
+                        }
+                    }
+
+                    this.displayTotal = function (parent, iTotal) {
+                        if (this.arrRatings.length > 0) {
+                            parent.innerHTML = "";
+
+                            var div = document.createElement("div");
+                            div.className = "keyHeader";
+                            div.innerText = "Key:";
+                            parent.appendChild(div);
+
+                            var table = document.createElement("table");
+                            for (var i = 0; i < this.arrRatings.length; i++) {
+                                var row = table.insertRow(i);
+
+                                var cell = row.insertCell(0);
+                                cell.innerText = this.arrRatings[i].label;
+                                cell.className = this.arrRatings[i].color;
+
+                                if (iTotal > 0) {
+                                    cell.innerText += ": ";
+                                    cell = row.insertCell(1);
+                                    cell.innerText = Math.round((this.arrRatings[i].total * 100) / iTotal) + "%";
+                                    cell.className = this.arrRatings[i].color;
+                                }
+                            }
+                            parent.appendChild(table);
+                        }
+                    }
+
+                    this.displaySubtotal = function (parent, columnTotal) {
+
+                        if ((this.arrRatings.length > 0) && (columnTotal)) {
+
+                            parent.innerHTML = "";
+
+                            var table = document.createElement("table");
+                            table.style.width = "100%";
+                            var row = table.insertRow(0);
+                            for (var i = 0; i < this.arrRatings.length; i++) {
+                                var cell = row.insertCell(i);
+                                cell.innerText = Math.round((this.arrRatings[i].subtotal * 100) / columnTotal) + "%";
+                                cell.className = this.arrRatings[i].color;
+                            }
+                            parent.appendChild(table);
+                        }
+                    }
+                }
+
+                function BucketTile() {
+
+                    this.arrRatings = new Array();
+
+                    this.color = function (oData) {
+                        if (isNaN(oData.DesiredBucket)) {
+                            return "blue";
+                        } else {
+                            if (oData.Bucket === oData.DesiredBucket) {
+                                return "darkblue";
+                            }
+                            else if (oData.DesiredBucket > oData.Bucket) {
+                                return "darkgreen";
+                            }
+                            else {
+                                return "darkred";
+                            }
+                        }
+                    }
+                }
+                BucketTile.prototype = new Tile;
+
+                function ManagerTile() {
+
+                    this.ratingIndex = calibrator.data.managerType;
+
+                    this.arrRatings = new Array();
+                    for (var i = 0; i < calibrator.data.managers.length; i++) {
+                        var sColor;
+                        if (i >= calibrator.data.managerColors.length) {
+                            sColor = "white";
+                        } else {
+                            sColor = calibrator.data.managerColors[i];
+                        }
+                        this.arrRatings.push({ label: calibrator.data.managers[i], rating: calibrator.data.managers[i], color: sColor });
+                    }
+                }
+                ManagerTile.prototype = new Tile;
+
+                function RatingTile(ratingIndex) {
+
+                    this.ratingIndex = ratingIndex;
+
+                    this.arrRatings = [
+                        { label: "Bucket 1", rating: 1, color: "green" },
+                        { label: "Bucket 2", rating: 2, color: "green" },
+                        { label: "Bucket 3", rating: 3, color: "peerCell" },
+                        { label: "Bucket 4", rating: 4, color: "yellow" },
+                        { label: "Bucket 5", rating: 5, color: "red" }
+                    ];
+                }
+                RatingTile.prototype = new Tile;
+
+                function PromoTile() {
+
+                    this.ratingIndex = "Promo";
+
+                    this.rightValue = function (oData) {
+                        if (isNaN(oData.MonthsInLevel)) {
+                            return "";
+                        }
+                        else {
+                            return oData.MonthsInLevel;
+                        }
+                    }
+
+                    this.arrRatings = new Array();
+                    for (var i = 0; i < calibrator.data.promos.length; i++) {
+                        this.arrRatings.push(calibrator.data.promos[i]);
+                    }
+                }
+                PromoTile.prototype = new Tile;
+
+                function RewardTile() {
+
+                    this.ratingIndex = "Bucket";
+
+                    this.arrRatings = new Array();
+                    for (var i = 0; i < calibrator.data.peerBands.length; i++) {
+                        this.arrRatings.push(calibrator.data.peerBands[i]);
+                    }
+                }
+                RewardTile.prototype = new Tile;
+
+                // Compare window
+
+                function CompareWindowHandlers() {
+
+                    var DeleteClick = function (e) {
+                        if (undefined !== e) {
+                            var row = this.parentNode;
+                            var table = row.parentNode;
+                            var index = row.rowIndex;
+                            table.deleteRow(row.rowIndex);
+                            if (table.rows.length > 1) {
+                                if (index >= table.rows.length) {
+                                    index = table.rows.length - 1;
+                                }
+                                var cell = table.rows[index].cells[0]
+                                AddComparison(cell.innerText);
+                            }
+                            else {
+                                var div = document.getElementById("propInfo");
+                                div.style.display = "none";
+                            }
+                        }
+                    };
+
+                    var ComparisonClick = function (e) {
+                        AddComparison(this.innerText);
+                        return false;
+                    };
+
+                    var ShowNotes = function (e) {
+                        var div = document.getElementById("propAlias");
+                        calibrator.view.properties.handlers.showProperties(div.innerText);
+                        return false;
+                    }
+
+                    var AddComparison = function (sAlias) {
+
+                        var arrTable = [
+                            { header: "Alias", index: "Alias", align: "left", onclick: ComparisonClick, oncontextmenu: DeleteClick },
+                            { header: "Reports", index: "Reports" },
+                            { header: "Level", index: "Level" },
+                            { header: "Length<br>in&nbsp;Level", index: "MonthsInLevel" },
+                            { header: "Promotion", index: "Promo", bool: true },
+                            { header: "Top<br>Rewards", index: "TopRewards", bool: true },
+                            { header: "Zero<br>Rewards", index: "ZeroRewards", bool: true },
+                            { header: "2021<br>Bucket", index: "Minus2Rating", tile: new RatingTile("Minus2Rating") },
+                            { header: "2022<br>Bucket", index: "Minus1Rating", tile: new RatingTile("Minus1Rating") }
+                        ];
+
+                        for (var i = 0; i < calibrator.data.columns.length; i++) {
+                            var oCol = calibrator.data.columns[i];
+                            if ("Custom" === oCol.key.substr(0, "Custom".length)) {
+                                arrTable.push({ header: oCol.label, index: oCol.key });
+                            }
+                        }
+
+                        if (!calibrator.view.compare.cfg.getProperty("visible")) {
+
+                            var table = document.createElement("table");
+                            var row = table.insertRow(0);
+                            for (var i = 0; i < arrTable.length; i++) {
+
+                                var cell = row.insertCell(i);
+                                cell.innerHTML = arrTable[i].header;
+                                cell.className = "cmpLabel";
+                                cell.style.textAlign = arrTable[i].align;
+                            }
+
+                            var info = document.createElement("div");
+                            info.id = "propInfo";
+                            info.className = "cmpBox";
+                            info.innerHTML = "<table width='100%'><tr><td width='100'><div id='propPictureDiv'><div id='propPicture'></div></div></td>" +
+                                             "<td align='left' valign='top'><div id='propName'></div><div id='propTitle'></div><div id='propAlias'></div>" +
+                                             "<div id='propShowNotes' style='margin-top: 10px;text-decoration: underline; cursor: pointer'>Show Notes</div></td>" +
+                                             "<td align='right' valign='top'><div class='cmpOrg' id='propDirector'></div><div class='cmpLine'>|</div></div><div class='cmpOrg' id='propDevMgr'></div><div class='cmpLine'>|</div><div class='cmpOrg' id='propManager'></div></td></tr></table>";
+
+                            var div = document.createElement("div");
+                            div.appendChild(table);
+                            div.appendChild(info);
+
+                            calibrator.view.compare.setBody(div);
+                            calibrator.view.compare.show();
+                        }
+
+                        var oData = calibrator.data.rsAlias(calibrator.data.findAlias(sAlias));
+
+                        var table = calibrator.view.compare.body.getElementsByTagName("table")[0];
+
+                        var bFound = false;
+                        for (var i = 1; i < table.rows.length; i++) {
+                            var cell = table.rows[i].cells[0];
+                            //cell.style.backgroundColor = "#B8CCE4";
+                            if (sAlias === cell.innerText) {
+                                //cell.style.backgroundColor = "#7494BA";
+                                bFound = true;
+                            }
+                        }
+
+                        if (!bFound) {
+                            var row = table.insertRow();
+
+                            for (var i = 0; i < arrTable.length; i++) {
+
+                                var cell = row.insertCell(i);
+
+                                var cellValue = oData[arrTable[i].index];
+                                if (typeof cellValue === "number") {
+                                    cellValue = (isNaN(cellValue)) ? "" : (Math.floor(cellValue * 100) / 100);
+                                }
+                                cell.innerText = cellValue;
+
+                                if ((typeof cellValue === "string") && (cellValue.indexOf("://") > 0)) {
+                                    cell.innerHTML = "<a target='_blank' href='" + cellValue + "'>Link</a>";
+                                }
+
+                                if (undefined === arrTable[i].tile) {
+                                    cell.className = "cmpCell";
+                                }
+                                else {
+                                    cell.className = arrTable[i].tile.color(oData);
+                                }
+
+                                if (undefined !== arrTable[i].bool) {
+                                    if ("No" === cell.innerText) {
+                                        cell.innerText = "";
+                                    }
+                                }
+
+                                var sAlign = "center";
+                                if (undefined !== arrTable[i].align) {
+                                    sAlign = arrTable[i].align;
+                                }
+
+                                cell.style.textAlign = sAlign;
+                                cell.style.whiteSpace = "nowrap";
+
+                                if ((undefined !== arrTable[i].onclick) || (undefined !== arrTable[i].oncontextmenu)) {
+                                    if ((undefined !== arrTable[i].onclick)) {
+                                        cell.onclick = arrTable[i].onclick;
+                                    }
+                                    if ((undefined !== arrTable[i].oncontextmenu)) {
+                                        cell.oncontextmenu = arrTable[i].oncontextmenu;
+                                    }
+                                    cell.onselectstart = function (e) { e.cancelBubble = true; return false; };
+                                    cell.style.cursor = "pointer";
+                                    //cell.style.backgroundColor = "#7494BA";
+                                }
+                            }
+                        }
+
+                        var img = document.getElementById("propPicture");
+                        img.style.backgroundImage = "url(http://who/Photos/" + sAlias + ".jpg)";
+
+                        var div = document.getElementById("propName");
+                        div.innerText = oData.Name;
+
+                        div = document.getElementById("propTitle");
+                        div.innerText = oData.Title;
+
+                        div = document.getElementById("propAlias");
+                        div.innerText = oData.Alias;
+
+                        div = document.getElementById("propShowNotes");
+                        div.onclick = ShowNotes;
+
+                        div = document.getElementById("propDirector");
+                        if ("" === oData.Director) {
+                            div.innerText = " ";
+                        }
+                        else {
+                            div.innerText = oData.Director;
+                        }
+
+                        var DevMgrDiv = document.getElementById("propDevMgr");
+                        var ManagerDiv = document.getElementById("propManager");
+
+                        if (oData.Manager === oData.Director) {
+                            DevMgrDiv.innerText = " ";
+                            ManagerDiv.innerText = " ";
+                        }
+                        else if (oData.Manager === oData.DevManager) {
+                            DevMgrDiv.innerText = oData.DevManager;
+                            ManagerDiv.innerText = " ";
+                        }
+                        else {
+                            DevMgrDiv.innerText = oData.DevManager;
+                            ManagerDiv.innerText = oData.Manager;
+                        }
+
+                        div = document.getElementById("propInfo");
+                        div.style.display = "inherit";
+
+                        if (calibrator.view.properties.cfg.getProperty("visible")) {
+                            calibrator.view.properties.handlers.showProperties(oData.Alias);
+                        }
+
+                        calibrator.view.compare.cfg.setProperty("width", (table.clientWidth + table.offsetLeft * 2) + "px");
+                    }
+
+                    var onclickItem = function (e) {
+                        //get the resolved (non-text node) target:
+                        var elTarget = YAHOO.util.Event.getTarget(e);
+                        //walk up the DOM tree looking for an <li>
+                        //in the target's ancestry; desist when you
+                        //reach the container div
+                        while ("UL" !== elTarget.nodeName.toUpperCase()) {
+                            //are you an li?
+                            if (elTarget.nodeName.toUpperCase() == "LI") {
+
+                                YAHOO.util.Event.preventDefault(e);
+
+                                var divs = elTarget.getElementsByTagName("div");
+                                var sAlias = divs[0].innerText;
+                                var sLevel = divs[1].innerText;
+
+                                AddComparison(sAlias);
+
+                                return false;
+                            } else {
+                                //wasn't the container, but wasn't an li; so
+                                //let's step up the DOM and keep looking:
+                                elTarget = elTarget.parentNode;
+                            }
+                        }
+                    };
+
+                    var onclickContainer = function (e) {
+
+                        var parent = this.parentNode;
+                        var items = parent.getElementsByTagName("li");
+                        for (var i = 0; i < items.length; i++) {
+                            var sAlias = items[i].children(0).innerText;
+
+                            AddComparison(sAlias);
+                        }
+                    }
+
+                    var onclickHeader = function (e) {
+                        var col = this.cellIndex;
+                        var table = this.parentNode.parentNode.parentNode;
+                        for (var i = 1; i < table.rows.length; i++) {
+                            var row = table.rows[i];
+                            var cell = row.cells[col];
+                            var items = cell.getElementsByTagName("li");
+                            for (var k = 0; k < items.length; k++) {
+                                var sAlias = items[k].children(0).innerText;
+                                AddComparison(sAlias)
+                            }
+                        }
+                    }
+
+                    var onclickRow = function (e) {
+                        var row = this.parentNode;
+                        var table = this.parentNode.parentNode.parentNode;
+                        for (var i = 1; i < row.cells.length; i++) {
+                            var cell = row.cells[i];
+                            var items = cell.getElementsByTagName("li");
+                            for (var k = 0; k < items.length; k++) {
+                                var sAlias = items[k].children(0).innerText;
+                                AddComparison(sAlias)
+                            }
+                        }
+                    }
+
+                    return (
+                        {
+                            onclickItem: onclickItem,
+                            onclickContainer: onclickContainer,
+                            onclickHeader: onclickHeader,
+                            onclickRow: onclickRow
+                        }
+                    );
+                }
+
+                // Properties window
+
+                function PropertyWindowHandlers() {
+
+
+                    var onclickItem = function (e) {
+                        //get the resolved (non-text node) target:
+                        var elTarget = YAHOO.util.Event.getTarget(e);
+                        //walk up the DOM tree looking for an <li>
+                        //in the target's ancestry; desist when you
+                        //reach the container div
+                        while ("UL" !== elTarget.nodeName.toUpperCase()) {
+                            //are you an li?
+                            if (elTarget.nodeName.toUpperCase() == "LI") {
+
+                                YAHOO.util.Event.preventDefault(e);
+
+                                var divs = elTarget.getElementsByTagName("div");
+                                var sAlias = divs[0].innerText;
+                                var sLevel = divs[1].innerText;
+
+                                ShowProperties(sAlias);
+                                return false;
+                            } else {
+                                //wasn't the container, but wasn't an li; so
+                                //let's step up the DOM and keep looking:
+                                elTarget = elTarget.parentNode;
+                            }
+                        }
+                    };
+
+                    var ShowProperties = function (sAlias) {
+
+                        var oData = calibrator.data.rsAlias(calibrator.data.findAlias(sAlias));
+
+                        var sStr = "<div style='margin-top: 10px; margin-left: 4px'><div style='float: left; margin-top: 5px'>Promotion: </div><div id='propPromo' style='float: left'></div></div>" +
+ //                                  "<div><div style='float: left; margin-top: 5px;margin-left: 10px'>Desired Group: </div><div id='propTarget' style='float: left'></div></div>" +
+                                   "<div style='clear: both'><textarea id='propText' rows='20' cols='63'></textarea></div>";
+
+                        calibrator.view.properties.setBody(sStr);
+                        var panel = document.getElementById("propertiesPanel");
+                        var textArea = calibrator.view.properties.body.getElementsByTagName("textarea")[0];
+                        textArea.style.width = (panel.clientWidth - 30) + "px";
+                        textArea.style.height = (panel.clientHeight - 100) + "px";
+
+                        var onPromoMenuItemClick = function (p_sType, p_aArgs, p_oItem) {
+                            var sText = p_oItem.cfg.getProperty("text");
+                            oData.Promo = p_oItem.value;
+                            oPromoMenuButton.set("label", sText);
+
+                            calibrator.data.dirty = true;
+
+                            calibrator.view.tab.selectTab(calibrator.view.tab.get("activeIndex"));
+                        };
+
+                        var onTargetMenuItemClick = function (p_sType, p_aArgs, p_oItem) {
+                            var sText = p_oItem.cfg.getProperty("text");
+                            oData.DesiredBucket = p_oItem.value;
+                            oTargetMenuButton.set("label", sText);
+
+                            calibrator.data.dirty = true;
+
+                            calibrator.view.tab.selectTab(calibrator.view.tab.get("activeIndex"));
+                        };
+
+                        var tile = new PromoTile();
+
+                        var aMenuItemData = [{ text: "Not Set", value: "", onclick: { fn: onPromoMenuItemClick } }];
+                        for (var i = 0; i < tile.arrRatings.length; i++) {
+                            aMenuItemData.push({ text: tile.arrRatings[i].label, value: tile.arrRatings[i].rating, onclick: { fn: onPromoMenuItemClick } });
+                        }
+
+                        var index;
+                        for (index = 0; index < aMenuItemData.length; index++) {
+                            if (oData.Promo === aMenuItemData[index].value) {
+                                break;
+                            }
+                        }
+
+                        if (index === aMenuItemData.length) {
+                            aMenuItemData.push({ text: oData.Promo, value: oData.Promo, onclick: { fn: onPromoMenuItemClick } });
+                        }
+
+                        var oPromoMenuButton = new YAHOO.widget.Button({
+                            type: "menu",
+                            label: aMenuItemData[index].text,
+                            menu: aMenuItemData,
+                            container: document.getElementById("propPromo")
+                        });
+                        /*
+                                                var aTargetMenuItemData = [{ text: "Not Set", value: NaN, onclick: { fn: onTargetMenuItemClick } }];
+                                                for (var i = 0; i < calibrator.data.peerBands.length; i++) {
+                                                    if (undefined !== calibrator.data.peerBands[i].rating) {
+                                                        aTargetMenuItemData.push({ text: calibrator.data.peerBands[i].label, value: calibrator.data.peerBands[i].rating, onclick: { fn: onTargetMenuItemClick } });
+                                                    }
+                                                }
+
+                                                index = 0;
+                                                for (var i = 0; i < aTargetMenuItemData.length; i++) {
+                                                    if (oData.DesiredBucket === aTargetMenuItemData[i].value) {
+                                                        index = i;
+                                                        break;
+                                                    }
+                                                }
+
+                                                var oTargetMenuButton = new YAHOO.widget.Button({
+                                                    type: "menu",
+                                                    label: aTargetMenuItemData[index].text,
+                                                    menu: aTargetMenuItemData,
+                                                    container: document.getElementById("propTarget")
+                                                });
+
+                        */
+                        var textObj = document.getElementById("propText");
+                        textObj.value = oData.Notes;
+                        textObj.onchange = function () {
+                            oData.Notes = textObj.value;
+                            calibrator.data.dirty = true;
+                        };
+
+
+                        calibrator.view.properties.setHeader(oData.Name);
+                        calibrator.view.properties.show();
+                    };
+
+                    return (
+                        {
+                            onclickItem: onclickItem,
+                            showProperties: ShowProperties
+                        }
+                    );
+                }
+
+                // Views
+
+                function View() {
+
+                    this.filter = new NoFilter();
+                    this.oTile = new BucketTile();
+                    this.bAllowDragDrop = false;
+
+                    this.setTile = function (oTile) {
+                        this.oTile = oTile;
+                    }
+
+                    this.setFilter = function (filter) {
+                        this.filter = filter;
+                    }
+
+                    this.allowDragDrop = function (bAllowDragDrop) {
+                        this.bAllowDragDrop = bAllowDragDrop;
+                    }
+
+                    this.create = function (oNode) {
+
+                        this.oNode = oNode;
+                        this.destroy();
+
+                        for (var i = 0; i < this.arrColumns.length; i++) {
+                            var oCol = this.arrColumns[i];
+
+                            oCol.column = document.createElement("div");
+                            oCol.column.className = "column";
+
+                            oCol.header = document.createElement("div");
+                            oCol.header.className = "columnHeader";
+                            oCol.header.innerText = oCol.label;
+                            oCol.header.onclick = calibrator.view.compare.handlers.onclickContainer;
+                            oCol.header.onselectstart = function () { return false; };
+                            oCol.column.appendChild(oCol.header);
+
+                            oCol.stats = document.createElement("div");
+                            oCol.stats.className = "columnStats";
+                            oCol.stats.innerHTML = "&nbsp;";
+                            oCol.stats.onclick = calibrator.view.compare.handlers.onclickContainer;
+                            oCol.stats.onselectstart = function () { return false; };
+                            oCol.column.appendChild(oCol.stats);
+
+                            oCol.list = document.createElement("ul");
+                            oCol.list.className = "draglist";
+                            oCol.column.appendChild(oCol.list);
+
+                            this.oNode.appendChild(oCol.column);
+
+                            if (this.bAllowDragDrop) {
+                                new YAHOO.util.DDTarget(oCol.list);
+                            }
+                        }
+
+                        this.oSidebarNode = document.createElement("div");
+                        this.oSidebarNode.className = "column";
+                        this.oSidebarNode.style.marginTop = "60px";
+                        this.oSidebarNode.style.marginLeft = "20px";
+
+                        this.oNode.appendChild(this.oSidebarNode);
+
+                        this.oFilterNode = document.createElement("div");
+                        this.oFilterNode.style.clear = "both";
+                        this.oSidebarNode.appendChild(this.oFilterNode);
+
+                        this.oSummaryNode = document.createElement("div");
+                        this.oSummaryNode.style.clear = "both";
+                        this.oSidebarNode.appendChild(this.oSummaryNode);
+                    }
+
+                    this.destroy = function () {
+                        for (var i = 0; i < this.arrColumns.length; i++) {
+                            var oCol = this.arrColumns[i];
+
+                            oCol.column = null;
+                            oCol.header = null;
+                            oCol.stats = null;
+                            oCol.list = null;
+                        }
+                        this.oNode.innerHTML = "";
+                    }
+
+                    this.update = function () {
+                        for (var j = 0; j < this.arrColumns.length; j++) {
+                            var oCol = this.arrColumns[j];
+                            oCol.list.innerHTML = "";
+                        }
+
+                        for (var i = 0; i < calibrator.data.length() ; i++) {
+                            var oData = calibrator.data.rsBucketRank(i);
+
+                            for (var j = 0; j < this.arrColumns.length; j++) {
+                                var oCol = this.arrColumns[j];
+
+                                if ((oCol.filter.validItem(oData)) && (this.filter.validItem(oData))) {
+
+                                    var item = document.createElement("li");
+                                    item.className = this.oTile.color(oData);
+
+                                    var div = document.createElement("div");
+                                    div.style.float = "left";
+                                    div.style.marginLeft = "2px";
+                                    div.innerText = this.oTile.leftValue(oData);
+                                    item.appendChild(div);
+
+                                    var div = document.createElement("div");
+                                    div.style.float = "right";
+                                    div.style.marginRight = "2px";
+                                    div.innerText = this.oTile.rightValue(oData);
+                                    item.appendChild(div);
+
+                                    var br = document.createElement("br");
+                                    item.appendChild(br);
+
+                                    if (this.bAllowDragDrop) {
+                                        new DDList(item, this);
+                                    }
+
+                                    YAHOO.util.Event.on(item, "click", calibrator.view.compare.handlers.onclickItem);
+                                    YAHOO.util.Event.on(item, "contextmenu", calibrator.view.properties.handlers.onclickItem);
+                                    YAHOO.util.Event.on(item, "selectstart", function (e) { e.cancelBubble = true; return false; });
+
+                                    oCol.list.appendChild(item);
+                                    break;
+                                }
+                            }
+                        }
+
+                        this.adjust();
+                    }
+
+                    this.adjust = function () {
+                        this.oTile.clearTotalCounters();
+                        var iTotal = 0;
+                        for (var j = 0; j < this.arrColumns.length; j++) {
+
+                            var oCol = this.arrColumns[j];
+                            var items = oCol.list.getElementsByTagName("li");
+
+                            this.oTile.clearSubtotalCounters();
+
+                            for (var i = 0; i < items.length; i++) {
+                                var sAlias = items[i].children(0).innerText;
+                                var oData = calibrator.data.rsAlias(calibrator.data.findAlias(sAlias));
+                                this.oTile.incrementCounters(oData);
+                            }
+
+                            this.oTile.displaySubtotal(oCol.stats, items.length);
+
+                            iTotal += items.length;
+                        }
+
+                        this.oTile.displayTotal(this.oSummaryNode, iTotal);
+                    }
+
+                    this.updateAverages = function () {
+
+                        var table = this.oNode.getElementsByTagName("table")[0];
+                        var totalCount = 0;
+                        var totalAverage = 0;
+                        for (var i = 0; i < calibrator.data.managers.length; i++) {
+
+                            var average = 0;
+                            var count = 0;
+                            var peers = calibrator.data.peerBands.length;
+
+                            for (var j = 0; j < peers; j++) {
+                                var row = table.rows[1 + j];
+                                var cell = row.cells[1 + i];
+                                var items = cell.getElementsByTagName("li");
+                                for (var k = 0; k < items.length; k++) {
+                                    var sAlias = items[k].children(0).innerText;
+                                    var oData = calibrator.data.rsAlias(calibrator.data.findAlias(sAlias));
+                                    if (oData !== undefined && !isNaN(oData.Bucket)) {
+                                        average += oData.Bucket;
+                                        count += 1;
+                                    }
+                                }
+                            }
+
+                            totalAverage += average;
+                            
+                            if (count > 0)
+                            {
+                                average = Math.floor(average / count);
+                            }
+                            
+                            this.arrColumns[i].label = calibrator.data.managers[i] + "\r(Avg: " + average + ")";
+                            table.rows[0].cells[i + 1].childNodes[0].innerText = this.arrColumns[i].label;
+                            totalCount += count;
+                        }
+
+                        if (totalCount > 0)
+                        {
+                            totalAverage = Math.floor(totalAverage / totalCount);
+                        }
+
+                        this.oSummaryNode.innerText = totalCount + " assigned in band \r (Overall Avg: " + totalAverage + ")";
+                    }
+
+                    // Drag/Drop Support
+
+                    var Dom = YAHOO.util.Dom;
+                    var Event = YAHOO.util.Event;
+                    var DDM = YAHOO.util.DragDropMgr;
+
+                    var DDList = function (id, oView, sGroup, config) {
+
+                        DDList.superclass.constructor.call(this, id, sGroup, config);
+
+                        this.oView = oView;
+
+                        var el = this.getDragEl();
+                        Dom.setStyle(el, "opacity", 0.67); // The proxy is slightly transparent
+
+                        this.goingUp = false;
+                        this.lastY = 0;
+                    };
+                    this.DDList = DDList;
+
+                    YAHOO.extend(DDList, YAHOO.util.DDProxy, {
+
+                        startDrag: function (x, y) {
+                            // make the proxy look like the source element
+                            var dragEl = this.getDragEl();
+                            var clickEl = this.getEl();
+                            Dom.setStyle(clickEl, "visibility", "hidden");
+
+                            dragEl.innerHTML = clickEl.innerHTML;
+
+                            Dom.setStyle(dragEl, "color", Dom.getStyle(clickEl, "color"));
+                            Dom.setStyle(dragEl, "backgroundColor", Dom.getStyle(clickEl, "backgroundColor"));
+                            Dom.setStyle(dragEl, "border", "2px solid gray");
+                            this.setXConstraint(0, 0);
+                        },
+
+                        endDrag: function (e) {
+
+                            var srcEl = this.getEl();
+                            var proxy = this.getDragEl();
+
+                            // Show the proxy element and animate it to the src element's location
+                            Dom.setStyle(proxy, "visibility", "");
+                            var a = new YAHOO.util.Motion(
+                                proxy,
+                                {
+                                    points: {
+                                        to: Dom.getXY(srcEl)
+                                    }
+                                },
+                                0.2,
+                                YAHOO.util.Easing.easeOut
+                            );
+
+                            var proxyid = proxy.id;
+                            var thisid = this.id;
+                            var thisview = this.oView;
+
+                            // Hide the proxy and show the source element when finished with the animation
+                            a.onComplete.subscribe(function () {
+                                Dom.setStyle(proxyid, "visibility", "hidden");
+                                Dom.setStyle(thisid, "visibility", "");
+                                thisview.adjust();
+                                calibrator.data.dirty = true;
+                            });
+                            a.animate();
+                        },
+
+                        onDragDrop: function (e, id) {
+                            
+                            // If there is one drop interaction, the li was dropped either on the list,
+                            // or it was dropped on the current location of the source element.
+                            if (DDM.interactionInfo.drop.length <= 2) {
+
+                                // The position of the cursor at the time of the drop (YAHOO.util.Point)
+                                var pt = DDM.interactionInfo.point;
+
+                                // The region occupied by the source element at the time of the drop
+                                var region = DDM.interactionInfo.sourceRegion;
+
+                                // Check to see if we are over the source element's location.  We will
+                                // append to the bottom of the list once we are sure it was a drop in
+                                // the negative space (the area of the list without any list items)
+                                if (!region.intersect(pt)) {
+                                    var destEl = Dom.get(id);
+                                    if ("TD" === destEl.nodeName) {
+                                        destEl = destEl.childNodes[0];
+                                    }
+                                    var destDD = DDM.getDDById(id);
+
+                                    var xy = Dom.getXY(destEl);
+
+                                    if (pt.bottom < xy[1]) {
+                                        destEl.insertBefore(this.getEl(), destEl.firstChild);
+                                    } else {
+                                        destEl.appendChild(this.getEl());
+                                    }
+
+                                    destDD.isEmpty = false;
+                                    DDM.refreshCache();
+                                }
+                            }
+                        },
+
+                        onDrag: function (e) {
+
+                            // Keep track of the direction of the drag for use during onDragOver
+                            var y = Event.getPageY(e);
+
+                            if (y < this.lastY) {
+                                this.goingUp = true;
+                            } else if (y > this.lastY) {
+                                this.goingUp = false;
+                            }
+
+                            this.lastY = y;
+                        },
+
+                        onDragOver: function (e, id) {
+
+                            var srcEl = this.getEl();
+                            var destEl = Dom.get(id);
+
+                            // We are only concerned with list items, we ignore the dragover
+                            // notifications for the list.
+                            if (destEl.nodeName.toLowerCase() == "li") {
+                                var orig_p = srcEl.parentNode;
+                                var p = destEl.parentNode;
+
+                                if (this.goingUp) {
+                                    Dom.setStyle(srcEl, "float", Dom.getStyle(destEl, "float"));
+                                    Dom.setStyle(srcEl, "width", Dom.getStyle(destEl, "width"));
+                                    Dom.setStyle(srcEl, "margin-bottom", Dom.getStyle(destEl, "margin-bottom"));
+                                    p.insertBefore(srcEl, destEl); // insert above
+                                } else {
+                                    Dom.setStyle(srcEl, "float", Dom.getStyle(destEl.nextSibling, "float"));
+                                    Dom.setStyle(srcEl, "width", Dom.getStyle(destEl.nextSibling, "width"));
+                                    Dom.setStyle(srcEl, "margin-bottom", Dom.getStyle(destEl.nextSibling, "margin-bottom"));
+                                    p.insertBefore(srcEl, destEl.nextSibling); // insert below
+                                }
+
+                                DDM.refreshCache();
+                            }
+                        }
+                    });
+
+
+                    var DDGroup = function (id, oView, sGroup, config) {
+
+                        DDGroup.superclass.constructor.call(this, id, sGroup, config);
+
+                        this.oView = oView;
+
+                        var el = this.getDragEl();
+                        Dom.setStyle(el, "opacity", 0.67); // The proxy is slightly transparent
+                    };
+                    this.DDGroup = DDGroup;
+
+                    YAHOO.extend(DDGroup, YAHOO.util.DDProxy, {
+
+                        startDrag: function (x, y) {
+                            // make the proxy look like the source element
+                            var dragEl = this.getDragEl();
+                            var clickEl = this.getEl();
+                            Dom.setStyle(clickEl, "visibility", "hidden");
+
+                            dragEl.innerHTML = clickEl.innerHTML;
+                            Dom.setStyle(dragEl, "margin", "10px");
+                            Dom.setStyle(dragEl, "padding", "0px");
+                            Dom.setStyle(dragEl, "borderLeft", "14px solid #7092BE");
+                            Dom.setStyle(dragEl, "minHeight", "18px");
+                            Dom.setStyle(dragEl, "minWidth", "120px");
+                            Dom.setStyle(dragEl, "listStyleType", "none");
+
+                            this.dropList = undefined;
+                            this.setXConstraint(0, 0);
+                        },
+
+                        endDrag: function (e) {
+
+                            var srcEl = this.getEl();
+                            if (undefined !== this.dropList) {
+                                srcEl = this.dropList;
+                            }
+                            var proxy = this.getDragEl();
+
+                            // Show the proxy element and animate it to the src element's location
+                            Dom.setStyle(srcEl, "visibility", "hidden");
+                            Dom.setStyle(proxy, "visibility", "");
+                            var a = new YAHOO.util.Motion(
+                                proxy,
+                                {
+                                    points: {
+                                        to: Dom.getXY(srcEl)
+                                    }
+                                },
+                                0.2,
+                                YAHOO.util.Easing.easeOut
+                            );
+
+                            var proxyid = proxy.id;
+                            var thisid = this.id;
+                            var thisview = this.oView;
+
+                            // Hide the proxy and show the source element when finished with the animation
+                            a.onComplete.subscribe(function () {
+                                Dom.setStyle(proxyid, "visibility", "hidden");
+                                Dom.setStyle(thisid, "visibility", "");
+                                Dom.setStyle(srcEl, "visibility", "");
+                                thisview.adjust();
+                                calibrator.data.dirty = true;
+                            });
+                            a.animate();
+                        },
+
+                        onDragDrop: function (e, id) {
+                            
+                            // If there is one drop interaction, the li was dropped either on the list,
+                            // or it was dropped on the current location of the source element.
+                            if (DDM.interactionInfo.drop.length <= 2) {
+
+                                // The position of the cursor at the time of the drop (YAHOO.util.Point)
+                                var pt = DDM.interactionInfo.point;
+
+                                // The region occupied by the source element at the time of the drop
+                                var region = DDM.interactionInfo.sourceRegion;
+
+                                // Check to see if we are over the source element's location.  We will
+                                // append to the bottom of the list once we are sure it was a drop in
+                                // the negative space (the area of the list without any list items)
+                                if (!region.intersect(pt)) {
+                                    var destEl = Dom.get(id);
+                                    if ("TD" === destEl.nodeName) {
+                                        destEl = destEl.childNodes[0];
+                                    }
+                                    var destDD = DDM.getDDById(id);
+
+                                    var xy = Dom.getXY(destEl);
+
+                                    var list = this.getEl();
+                                    var nodes = list.getElementsByTagName("li");
+                                    var arr = new Array();
+                                    for (var i = 0; i < nodes.length; i++) {
+                                        arr.push(nodes[i]);
+                                    }
+
+                                    if (pt.bottom < xy[1]) {
+                                        for (var i = arr.length - 1; i >= 0; i--) {
+                                            destEl.insertBefore(arr[i], destEl.firstChild);
+                                        }
+                                    } else {
+                                        for (var i = 0; i < arr.length; i++) {
+                                            destEl.appendChild(arr[i]);
+                                        }
+                                    }
+
+                                    this.dropList = destEl;
+
+                                    destDD.isEmpty = false;
+                                    DDM.refreshCache();
+                                }
+
+                            }
+                        }
+                    });
+
+                }
+
+                function LevelBandLabel(min, max, label) {
+                    if (undefined === label) {
+                        return (min + "-" + max);
+                    }
+                    else {
+                        return (label);
+                    }
+                }
+
+                // All Levels View
+
+                function AllLevelsView() {
+                    this.arrColumns = new Array();
+                    for (var i = calibrator.data.maxLevel; i >= calibrator.data.minLevel; i--) {
+                        this.arrColumns.push({ label: i.toString(10), filter: new LevelFilter(i) });
+                    }
+                }
+                AllLevelsView.prototype = new View;
+
+                // Level Band View
+
+                function LevelBandView() {
+                    this.arrColumns = new Array();
+                    for (var i = 0; i < calibrator.data.levelBands.length; i++) {
+                        var min = calibrator.data.levelBands[i].min;
+                        var max = calibrator.data.levelBands[i].max;
+                        this.arrColumns.push({ label: LevelBandLabel(min, max, calibrator.data.levelBands[i].label), filter: new LevelFilter(min, max) });
+                    }
+                }
+                LevelBandView.prototype = new View;
+
+                // Manager View
+
+                function ManagerView() {
+
+                    this.arrColumns = new Array();
+                    for (var i = 0; i < calibrator.data.managers.length; i++) {
+                        this.arrColumns.push({ label: calibrator.data.managers[i], filter: new ManagerFilter(calibrator.data.managers[i], calibrator.data.managerType) });
+                    }
+                }
+                ManagerView.prototype = new View;
+
+                // Reward View
+
+                function RewardView() {
+
+                    function FindBand(band) {
+                        if (!isNaN(band)) {
+                            var iBand = Math.floor(band);
+                            if ((iBand > 0) && (iBand < calibrator.data.peerBands.length)) {
+                                return (iBand - 1);
+                            }
+                        }
+
+                        return calibrator.data.peerBands.length - 1;
+                    }
+
+                    this.arrColumns = new Array();
+                    for (var i = 0; i < calibrator.data.managers.length; i++) {
+                        this.arrColumns.push({ label: calibrator.data.managers[i] + "\r(Avg: )", filter: new ManagerFilter(calibrator.data.managers[i], calibrator.data.managerType) });
+                    }
+
+                    this.showDistribution = function (distrib, totalCount) {
+                        var table = document.createElement("table");
+                        table.style.border = "1px solid gray";
+                        table.style.padding = "10px";
+
+                        this.oDistributionNode.innerHTML = "";
+                        for (var i = 0; i < distrib.length; i++) {
+                            var row = table.insertRow(-1);
+                            var cell = row.insertCell(-1);
+                            cell.style.textAlign = "right";
+                            cell.innerText = distrib[i].slots;
+
+                            cell = row.insertCell(-1);
+                            cell.style.paddingLeft = "10px";
+                            cell.style.width = "200px";
+                            if ((0 !== distrib[i].count) && (0 !== totalCount)) {
+                                var pct = distrib[i].count / totalCount;
+                                var div = document.createElement("div");
+                                div.className = "blue";
+                                div.style.width = Math.round(pct * 150) + "px";
+                                div.style.height = "15px";
+                                div.style.float = "left";
+                                div.innerHTML = "&nbsp;";
+                                cell.appendChild(div);
+
+                                div = document.createElement("div");
+                                div.style.float = "left";
+                                div.style.marginLeft = "5px";
+                                div.innerText = Math.round(pct * 100) + "%";
+                                cell.appendChild(div);
+                            }
+                        }
+                        this.oDistributionNode.appendChild(table);
+                    }
+
+                    this.insertHeaderCell = function (row) {
+
+                        var cell = row.insertCell(-1);
+                        cell.style.textAlign = "right";
+                        cell.style.minWidth = "50px";
+                        cell.style.paddingRight = "10px";
+                        cell.style.color = "gray";
+                        cell.style.cursor = "pointer";
+                        cell.innerHTML = "<div style='font-size: 12pt; text-align: center'></div><div style='text-align: center'></div>";
+
+                        cell.onclick = calibrator.view.compare.handlers.onclickRow;
+
+                        return (cell);
+                    }
+
+                    this.insertListCell = function (row) {
+
+                        var cell = row.insertCell(-1);
+                        cell.className = "peerCell";
+
+                        var list = document.createElement("ul");
+                        list.style.minHeight = "18px";
+                        list.style.minWidth = "120px";
+                        list.style.margin = "10px";
+                        list.style.padding = "0";
+                        list.style.listStyleType = "none";
+                        list.style.cursor = "move";
+
+                        new YAHOO.util.DDTarget(cell);
+                        new this.DDGroup(list, this);
+
+                        cell.appendChild(list);
+                    }
+
+                    this.create = function (oNode) {
+                        this.oNode = oNode;
+                        this.destroy();
+
+                        var table = document.createElement("table");
+                        table.style.float = "left";
+                        table.style.margin = "20px";
+                        table.style.borderCollapse = "collapse";
+                        oNode.appendChild(table);
+                        this.oTableNode = table;
+
+                        var row = table.insertRow(-1);
+                        var cell = row.insertCell(-1);
+                        cell.style.textAlign = "center";
+                        cell.className = "columnHeader";
+                        cell.style.fontSize = "12pt";
+                        cell.innerText = "";
+
+                        var arrCells = [];
+                        for (var i = 0; i < calibrator.data.peerBands.length; i++) {
+                            var row = table.insertRow(-1);
+                            var cell = this.insertHeaderCell(row);
+
+                            arrCells.push(cell);
+                        }
+
+                        var arrMenuItems = [];
+                        arrMenuItems.push("Insert row");
+                        arrMenuItems.push("Delete row");
+
+                        for (var i = 0; i < calibrator.data.slots.length; i++) {
+                            arrMenuItems.push(calibrator.data.slots[i].toString(10));
+                        }
+
+                        var contextMenu = new YAHOO.widget.ContextMenu(
+                            "slotcontextmenu",
+                            {
+                                trigger: arrCells,
+                                itemdata: arrMenuItems,
+                                lazyload: true
+                            }
+                        );
+                        calibrator.view.contextMenu = contextMenu;
+
+                        contextMenu.subscribe("triggerContextMenu", function () {
+                            if (!calibrator.view.menuBar.showRewardRatings) {
+                                this.cancel();
+                            }
+                        });
+
+                        contextMenu.subscribe("render", function (p_sType, p_aArgs) {
+                            this.subscribe("click", function (p_sType, p_aArgs) {
+                                var oItem = p_aArgs[1];
+                                if (oItem) {
+                                    var cell = this.contextEventTarget;
+                                    while ((cell) && ("TD" != cell.tagName)) {
+                                        cell = cell.parentNode;
+                                    }
+                                    if (cell) {
+                                        var rowIndex = cell.parentNode.rowIndex;
+                                        switch (oItem.index) {
+                                            case 0: // Add row
+
+                                                if (undefined === calibrator.data.peerBands[rowIndex - 1].slots) {
+                                                    alert('Cannot add "Unassigned" row.');
+                                                } else {
+                                                    calibrator.data.peerBands.splice(rowIndex - 1, 0, { slots: calibrator.data.peerBands[rowIndex - 1].slots });
+                                                    var row = table.insertRow(rowIndex);
+
+                                                    calibrator.view.reward.insertHeaderCell(row);
+                                                    for (var i = 0; i < calibrator.view.reward.arrColumns.length; i++) {
+                                                        calibrator.view.reward.insertListCell(row);
+                                                    }
+
+                                                    var arrCells = [];
+                                                    for (var i = 0; i < calibrator.data.peerBands.length; i++) {
+                                                        arrCells.push(table.rows[1 + i].cells[0]);
+                                                    }
+                                                    contextMenu.cfg.setProperty("trigger", arrCells);
+                                                }
+                                                break;
+                                            case 1: // delete row
+                                                var row = table.rows(rowIndex);
+                                                var items = row.getElementsByTagName("li");
+                                                if (items.length > 0) {
+                                                    alert("Rows with items in them cannot be deleted.");
+                                                } else if (undefined === calibrator.data.peerBands[rowIndex - 1].slots) {
+                                                    alert('Cannot delete "Unassigned" row.');
+                                                }
+                                                else {
+                                                    calibrator.data.peerBands.splice(rowIndex - 1, 1);
+                                                    table.deleteRow(rowIndex);
+                                                }
+                                                break;
+                                            default: // set slots
+                                                calibrator.data.peerBands[rowIndex - 1].slots = calibrator.data.slots[oItem.index - 2];
+                                                cell.childNodes[0].innerText = calibrator.data.slots[oItem.index - 2];
+                                                break;
+                                        }
+                                        calibrator.view.reward.adjust();
+                                    }
+                                }
+                            });
+                        });
+
+                        for (var i = 0; i < this.arrColumns.length; i++) {
+                            var row = table.rows[0];
+                            var cell = row.insertCell(-1);
+                            cell.style.textAlign = "center";
+
+                            var div = document.createElement("div");
+                            div.className = "columnHeader";
+                            div.style.fontSize = "12pt";
+                            div.style.marginBottom = "5px";
+                            div.innerText = this.arrColumns[i].label;
+                            cell.appendChild(div);
+
+                            div = document.createElement("div");
+                            div.className = "columnStats";
+                            div.style.fontSize = "12pt";
+                            div.innerText = " ";
+                            div.style.display = "none";
+                            cell.appendChild(div);
+
+                            cell.onclick = calibrator.view.compare.handlers.onclickHeader;
+
+                            for (var j = 0; j < calibrator.data.peerBands.length; j++) {
+                                var row = table.rows[1 + j];
+                                this.insertListCell(row);
+                            }
+                        }
+
+                        this.oSidebarNode = document.createElement("div");
+                        this.oSidebarNode.className = "column";
+                        this.oSidebarNode.style.marginTop = "74px";
+                        this.oSidebarNode.style.marginLeft = "20px";
+                        this.oSidebarNode.style.float = "left";
+
+                        this.oNode.appendChild(this.oSidebarNode);
+
+                        this.oFilterNode = document.createElement("div");
+                        this.oFilterNode.style.clear = "both";
+                        this.oSidebarNode.appendChild(this.oFilterNode);
+
+                        this.oSummaryNode = document.createElement("div");
+                        this.oSummaryNode.style.clear = "both";
+                        this.oSummaryNode.style.fontSize = "12pt";
+                        this.oSummaryNode.style.marginTop = "20px";
+                        this.oSidebarNode.appendChild(this.oSummaryNode);
+
+                        this.oDistributionNode = document.createElement("div");
+                        this.oDistributionNode.style.clear = "both";
+                        this.oDistributionNode.style.fontSize = "12pt";
+                        this.oSidebarNode.appendChild(this.oDistributionNode);
+
+                    }
+
+                    this.destroy = function () {
+                        this.oNode.innerHTML = "";
+                    }
+
+                    this.update = function () {
+                        var table = this.oNode.getElementsByTagName("table")[0];
+
+                        var items = table.getElementsByTagName("li");
+                        for (var i = items.length - 1; i >= 0; i--) {
+                            var item = items[i];
+                            item.parentNode.removeChild(item);
+                        }
+
+                        var rowCount = table.rows.length - 1;
+                        if (rowCount < calibrator.data.peerBands.length) {
+                            for (var i = 0; i < (calibrator.data.peerBands.length - rowCount) ; i++) {
+                                var row = table.insertRow(1);
+                                calibrator.view.reward.insertHeaderCell(row);
+                                for (var j = 0; j < calibrator.view.reward.arrColumns.length; j++) {
+                                    calibrator.view.reward.insertListCell(row);
+                                }
+                            }
+
+                            var arrCells = [];
+                            for (var i = 0; i < calibrator.data.peerBands.length; i++) {
+                                arrCells.push(table.rows[1 + i].cells[0]);
+                            }
+                            calibrator.view.contextMenu.cfg.setProperty("trigger", arrCells);
+                        }
+                        else if (rowCount > calibrator.data.peerBands.length) {
+                            for (var i = 0; i < (rowCount - calibrator.data.peerBands.length) ; i++) {
+                                table.deleteRow(1);
+                            }
+                        }
+
+                        for (var i = 0; i < calibrator.data.length() ; i++) {
+                            var oData = calibrator.data.rsBucketRank(i);
+
+                            for (var j = 0; j < this.arrColumns.length; j++) {
+                                var oCol = this.arrColumns[j];
+
+                                if ((oCol.filter.validItem(oData)) && (this.filter.validItem(oData))) {
+                                    var row = table.rows[1 + FindBand(oData.BucketRank)];
+
+                                    var item = document.createElement("li");
+                                    item.className = this.oTile.color(oData);
+                                    item.style.color = "black";
+                                    item.style.listStyleType = "none";
+                                    item.style.minWidth = "120px";
+                                    item.style.paddingTop = "1px";
+                                    item.style.margin = "1px";
+                                    item.style.cursor = "move";
+
+                                    var div = document.createElement("div");
+                                    div.style.float = "left";
+                                    div.style.marginLeft = "2px";
+                                    div.innerText = this.oTile.leftValue(oData);
+                                    item.appendChild(div);
+
+                                    var div = document.createElement("div");
+                                    div.style.float = "right";
+                                    div.style.marginRight = "2px";
+                                    div.innerText = this.oTile.rightValue(oData);
+                                    item.appendChild(div);
+
+                                    var br = document.createElement("br");
+                                    item.appendChild(br);
+
+                                    new this.DDList(item, this);
+
+                                    YAHOO.util.Event.on(item, "click", calibrator.view.compare.handlers.onclickItem);
+                                    YAHOO.util.Event.on(item, "contextmenu", calibrator.view.properties.handlers.onclickItem);
+                                    YAHOO.util.Event.on(item, "selectstart", function (e) { e.cancelBubble = true; return false; });
+
+                                    var list = row.cells[1 + j].childNodes[0];
+                                    list.appendChild(item);
+                                }
+                            }
+                        }
+
+                        this.adjust();
+                    }
+
+                    this.adjust = function () {
+
+                        var table = this.oNode.getElementsByTagName("table")[0];
+
+                        var totalSlotsAvailable = 0.0;
+                        var totalSlotsUsed = 0.0;
+                        var totalCount = 0;
+                        var multiplier = 0.0;
+
+                        for (var i = 0; i < this.arrColumns.length; i++) {
+                            var subtotalSlotsAvailable = 0.0;
+                            var subtotalSlotsUsed = 0.0;
+                            var subtotalCount = 0;
+
+                            for (var j = 0; j < calibrator.data.peerBands.length; j++) {
+                                var row = table.rows[1 + j];
+                                var cell = row.cells[1 + i];
+                                var items = cell.getElementsByTagName("li");
+                                var iCount = 0;
+                                subtotalCount += items.length;
+                                for (var k = 0; k < items.length; k++) {
+                                    var sAlias = items[k].children(0).innerText;
+                                    var oData = calibrator.data.rsAlias(calibrator.data.findAlias(sAlias));
+
+                                    multiplier = calibrator.data.getRewardMultiplierForLevel(oData.Level);
+                                    var factor = calibrator.data.getRewardFactorForLevel(oData.Level);
+
+                                    subtotalSlotsAvailable += factor;
+
+                                    if (undefined !== calibrator.data.peerBands[j].slots) {
+                                        oData.BucketRank = (1 + j) + (iCount / 1000.0);
+                                        oData.Bucket = calibrator.data.calculateBucket(oData.BucketRank);
+                                        items[k].className = this.oTile.color(oData);
+                                        subtotalSlotsUsed += calibrator.data.peerBands[j].slots * factor;
+                                        iCount++;
+                                    } else {
+                                        oData.BucketRank = Number.NaN;
+                                        oData.Bucket = oData.BucketRank;
+                                    }
+                                }
+                                if (0 === items.length) {
+                                    cell.childNodes[0].style.borderLeft = "0px";
+                                } else {
+                                    cell.childNodes[0].style.borderLeft = "14px solid #7092BE";
+                                }
+                            }
+
+                            totalSlotsAvailable += subtotalSlotsAvailable * multiplier;
+                            totalSlotsUsed += subtotalSlotsUsed;
+                            totalCount += subtotalCount;
+                        }
+
+                        var distrib = [];
+                        for (var i = 0; i < calibrator.data.slots.length; i++) {
+                            distrib.push({ slots: calibrator.data.slots[i], count: 0 });
+                        }
+
+
+                        for (var i = 0; i < calibrator.data.peerBands.length; i++) {
+                            var row = table.rows[1 + i];
+
+                            var iCount = 0;
+                            for (var j = 1; j < row.cells.length; j++) {
+                                var cell = row.cells[j];
+                                var items = cell.getElementsByTagName("li");
+                                iCount += items.length;
+                            }
+
+                            for (var j = 0; j < distrib.length; j++) {
+                                if (calibrator.data.peerBands[i].slots === distrib[j].slots) {
+                                    distrib[j].count += iCount;
+                                    break;
+                                }
+                            }
+
+                            if (!calibrator.view.menuBar.showRewardRatings) {
+                                if (undefined === calibrator.data.peerBands[i].slots) {
+                                    row.cells[0].childNodes[0].innerText = "Not Assigned";
+                                } else {
+                                    // if (i % 2 === 0) {
+                                    //    row.cells[0].childNodes[0].innerText = (20 - i) * 10 + "%" // calibrator.data.peerBands[i].slots;
+                                    // } else {
+                                    //     row.cells[0].childNodes[0].innerText = "";
+                                    // }
+                                    row.cells[0].childNodes[0].innerText = (200 - 20 * i) + "%" // calibrator.data.peerBands[i].slots;
+                                }
+
+                                if (0 !== iCount) {
+                                    row.cells[0].childNodes[1].innerText = "(" + iCount + " / " + Math.round(iCount * 100 / totalCount) + "%)";
+                                } else {
+                                    row.cells[0].childNodes[1].innerText = "";
+                                }
+                            } else {
+                                if (0 !== iCount) {
+                                    row.cells[0].childNodes[1].innerText = iCount + ((undefined !== calibrator.data.peerBands[i].slots) ? " in group" : " unassgined");
+                                }
+                                else {
+                                    row.cells[0].childNodes[1].innerText = "";
+                                }
+
+                            }
+                            row.cells[0].childNodes[1].innerText = "";
+                        }
+
+                        if (calibrator.view.menuBar.showRewardRatings) {
+                            if (totalSlotsAvailable !== 0) {
+                                var delta = Math.round(totalSlotsUsed - totalSlotsAvailable);
+                                var sStr = "<div style='float:left'>Distribution Balance:</div><div style='width: 40px; margin-left: 5px; text-align: center; float: left' class='" + ((delta > 0) ? "red" : "green") + "'>" + ((delta > 0) ? "+" : "") + delta + "</div>" +
+                                           "<br><p style='float:none'>" + totalCount + " people in band \r (Overall Avg: )</p>";
+                                this.oSummaryNode.innerHTML = sStr;
+                                this.showDistribution(distrib, totalCount);
+                            }
+                        } else {
+                            this.oSummaryNode.innerText = totalCount + " people in band \r (Overall Avg: )";
+                        }
+
+                        calibrator.data.sortBucketRank();
+                        this.updateAverages();
+                    }
+                }
+                RewardView.prototype = new View;
+
+                // Tab Handlers
+
+                var rewardHandler = function (e) {
+
+                    function LevelChanged(e) {
+                        var index = this.value;
+                        calibrator.data.setActivePeerBandsForLevel(calibrator.data.levelBands[index].min);
+                        calibrator.view.reward.setFilter(new LevelFilter(calibrator.data.levelBands[index].min, calibrator.data.levelBands[index].max));
+                        calibrator.view.reward.update();
+                    }
+
+                    if (!e.newValue) {
+                        return;
+                    }
+
+                    if (undefined === calibrator.view.reward) {
+                        calibrator.data.setActivePeerBandsForLevel(calibrator.data.levelBands[0].min);
+                        calibrator.view.reward = new RewardView();
+                        calibrator.view.reward.setTile(new BucketTile());
+                        calibrator.view.reward.setFilter(new LevelFilter(calibrator.data.levelBands[0].min, calibrator.data.levelBands[0].max));
+                        calibrator.view.reward.create(document.getElementById("peerView"));
+
+                        var span = document.createElement("span");
+                        span.innerText = "Level: ";
+                        span.style.fontSize = "12pt";
+                        calibrator.view.reward.oFilterNode.appendChild(span);
+
+                        var dropdown = document.createElement("select");
+                        dropdown.onchange = LevelChanged;
+                        calibrator.view.reward.oFilterNode.appendChild(dropdown);
+
+                        for (var i = 0; i < calibrator.data.levelBands.length; i++) {
+                            var opt = document.createElement("option");
+                            opt.value = i;
+                            var sStr = calibrator.data.levelBands[i].label;
+                            if (undefined === sStr) {
+                                sStr = calibrator.data.levelBands[i].min + "-" + calibrator.data.levelBands[i].max;
+                            }
+                            opt.innerText = sStr;
+                            dropdown.appendChild(opt);
+                        }
+                    }
+
+                    calibrator.view.reward.update();
+                }
+
+                var promotionHandler = function (e) {
+
+                    if (!e.newValue) {
+                        return;
+                    }
+
+                    if (undefined === calibrator.view.promotion) {
+                        calibrator.view.promotion = new AllLevelsView();
+                        calibrator.view.promotion.setTile(new PromoTile());
+                        calibrator.view.promotion.create(document.getElementById("promoView"));
+                    }
+
+                    calibrator.view.promotion.update();
+                }
+
+                var tableHandler = function (e) {
+
+                    if (!e.newValue) {
+                        return;
+                    }
+
+                    if (undefined === calibrator.view.table) {
+                        calibrator.view.table = new Object();
+                        calibrator.view.table.dataSource = new YAHOO.util.DataSource(null);
+                        calibrator.view.table.columnSet = new YAHOO.widget.ColumnSet(calibrator.data.columns);
+                        calibrator.view.table.dataTable = new YAHOO.widget.DataTable("tableView", calibrator.view.table.columnSet, calibrator.view.table.dataSource, { initialLoad: false });
+                        calibrator.view.table.dataTable.addRows(calibrator.data.records);
+                    }
+
+                };
+
+                var notesHandler = function (e) {
+
+                    if (!e.newValue) {
+                        return;
+                    }
+
+                    var parent = document.getElementById("notesView");
+                    parent.innerHTML = "";
+
+                    function fnSelect(obj) {
+                        fnDeSelect();
+                        var range;
+                        if (document.selection) {
+                            range = document.body.createTextRange();
+                            range.moveToElementText(obj);
+                            range.select();
+                        }
+                        else if (window.getSelection) {
+                            range = document.createRange();
+                            range.selectNode(objId);
+                            window.getSelection().addRange(range);
+                        }
+
+                        return (range);
+                    }
+
+                    function fnDeSelect() {
+                        if (document.selection) document.selection.empty();
+                        else if (window.getSelection)
+                            window.getSelection().removeAllRanges();
+                    }
+
+                    var OnCopy = function () {
+                        var range = fnSelect(parent.childNodes[1]);
+                        //clipboardData.setData('text', range.htmlText);
+                        range.execCommand("Copy");
+                        fnDeSelect();
+                        window.scrollTo(0, 0);
+                    };
+
+                    var sStr = "";
+                    for (var i = 0; i < calibrator.data.length() ; i++) {
+                        var oData = calibrator.data.rsBucketRank(i);
+
+                        if ("" !== oData.Notes) {
+                            sStr += "<p style='font-size: 12pt'><b>" + oData.Name + "</b><br>" + oData.Title + "<br>" +
+                                    oData.Alias + "</p>" +
+                                    "<pre style='font-family: Calibri; white-space: pre-wrap'>" + oData.Notes + "</pre><p>&nbsp;</p>";
+                        }
+                    }
+
+                    if ("" === sStr) {
+                        parent.innerHTML = "No notes available.";
+                    }
+                    else {
+                        var div = document.createElement("div");
+                        div.style.textDecoration = "underline";
+                        div.style.fontFamily = "Calibri";
+                        div.style.cursor = "pointer";
+                        div.style.marginTop = "20px";
+                        div.style.marginBottom = "20px";
+                        div.innerText = "Copy to clipboard";
+                        div.onclick = OnCopy;
+                        parent.appendChild(div);
+
+                        div = document.createElement("div");
+                        div.style.fontFamily = "Calibri";
+                        div.innerHTML = sStr;
+                        parent.appendChild(div);
+                    }
+                };
+
+                var helpHandler = function (e) {
+
+                    if (!e.newValue) {
+                        return;
+                    }
+
+                    var parent = document.getElementById("helpView");
+                    parent.style.visibility = "visible";
+                }
+
+                // Menus
+
+                var onOpenMenuItemClick = function () {
+                    var result = true;
+                    if (calibrator.data.dirty) {
+                        calibrator.view.menuBar.clearActiveItem();
+                        result = window.confirm("Changes have not been saved - do you wish to discard them?");
+                    }
+
+                    if (result) {
+                        calibrator.data.dirty = false;
+                        document.location.reload();
+                    }
+                };
+
+                var onSaveMenuItemClick = function () {
+                    calibrator.data.save(function () {
+                    });
+                };
+
+                var onPrintMenuItemClick = function () {
+                    calibrator.view.menuBar.clearActiveItem();
+                    window.print();
+                };
+
+                var onPrintPreviewMenuItemClick = function () {
+                    calibrator.view.menuBar.clearActiveItem();
+                    var objPrintPreview = '<object id="printPrev" width="0" height="0" classid="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></object>';
+                    document.body.insertAdjacentHTML('beforeEnd', objPrintPreview);
+                    printPrev.ExecWB(7, 2);
+                    printPrev.outerHTML = "";
+                };
+
+                var onSaveAsMenuItemClick = function () {
+                    calibrator.data.saveAs();
+                }
+
+                var onExportMenuItemClick = function () {
+                    calibrator.data.saveXML();
+                }
+
+                var onMenuItemClick = function () {
+                };
+
+                var onCloseMenuItemClick = function () {
+                    var result = true;
+                    if (calibrator.data.dirty) {
+                        calibrator.view.menuBar.clearActiveItem();
+                        result = window.confirm("Changes have not been saved - do you wish to discard them?");
+                    }
+
+                    if (result) {
+                        calibrator.data.dirty = false;
+                        window.close();
+                    }
+                };
+
+                var onViewMenuItemClick = function (p_sType, p_aArgs, p_oItem) {
+
+                    var index = p_oItem["index"];
+                    calibrator.view.tab.set("activeIndex", index);
+                };
+
+                var onRewardRatingsMenuItemClick = function (p_sType, p_aArgs, p_oItem) {
+                    var checked = p_oItem.cfg.getProperty("checked");
+                    checked = !checked;
+                    p_oItem.cfg.setProperty("checked", checked);
+                    calibrator.view.menuBar.showRewardRatings = checked;
+                    calibrator.view.tab.selectTab(calibrator.view.tab.get("activeIndex"));
+                };
+
+                var onMenuKeyDown = function () {
+
+                    function DoMenuFromKeypress(keyCode) {
+
+                        for (var i = 0; i < arrMenuItemData.length; i++) {
+                            var itemdata = arrMenuItemData[i].submenu.itemdata;
+                            for (var j = 0; j < itemdata.length; j++) {
+                                var arr = itemdata[j];
+                                if (Array.isArray(arr)) {
+                                    for (var k = 0; k < arr.length; k++) {
+                                        if ((undefined !== arr[k].keylistener) && (keyCode === arr[k].keylistener.keys)) {
+                                            arr[k].onclick.fn();
+                                            return (true);
+                                        }
+                                    }
+                                }
+                                else {
+                                    if ((undefined !== arr.keylistener) && (keyCode === arr.keylistener.keys)) {
+                                        arr.onclick.fn();
+                                        return (true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    var e = window.event; // this only works in IE other browsers pass in the arg rather than use window.event
+
+                    if (e.ctrlKey) {
+                        if (DoMenuFromKeypress(e.keyCode)) {
+                            e.cancelBubble = true; // ie specific ff is preventDefault()
+                            try {
+                                e.keyCode = 0; // this is a hack to capture ctrl+f ctrl+p etc
+                            }
+                            catch (e) {
+
+                            }
+
+                            return false;
+                        }
+                    }
+
+                    return true; // for keys that weren't shortcuts (e.g. no ctrl) then the event is bubbled
+                };
+
+                var arrMenuItemData = [
+
+                    {
+                        text: "File",
+                        submenu: {
+                            id: "fileMenu",
+                            itemdata: [
+                                [
+                                    { text: "Open&#133;", helptext: "Ctrl + O", onclick: { fn: onOpenMenuItemClick }, keylistener: { ctrl: true, keys: "O".charCodeAt(0) } },
+                                    { text: "Save", helptext: "Ctrl + S", onclick: { fn: onSaveMenuItemClick }, keylistener: { ctrl: true, keys: "S".charCodeAt(0) } },
+                                    { text: "Save As&#133;", helptext: "Ctrl + A", onclick: { fn: onSaveAsMenuItemClick }, keylistener: { ctrl: true, keys: "A".charCodeAt(0) } },
+                                    { text: "Export&#133;", helptext: "Ctrl + E", onclick: { fn: onExportMenuItemClick }, keylistener: { ctrl: true, keys: "E".charCodeAt(0) } }
+                                ],
+                                [
+                                    { text: "Print&#133;", helptext: "Ctrl + P", onclick: { fn: onPrintMenuItemClick }, keylistener: { ctrl: true, keys: "P".charCodeAt(0) } },
+                                    { text: "Print preview&#133;", helptext: "Ctrl + R", onclick: { fn: onPrintPreviewMenuItemClick }, keylistener: { ctrl: true, keys: "R".charCodeAt(0) } }
+                                ],
+                                [
+                                    { text: "Exit", helptext: "Ctrl + Q", onclick: { fn: onCloseMenuItemClick }, keylistener: { ctrl: true, keys: "Q".charCodeAt(0) } }
+                                ]
+                            ]
+                        }
+
+                    },
+                    {
+                        text: "View",
+                        submenu: {
+                            id: "viewMenu",
+                            itemdata: [
+//                                [
+//                                   { text: "Show Reward Ratings", checked: false, onclick: { fn: onRewardRatingsMenuItemClick } },
+//                                ],
+                                [
+                                    { text: "Impact Groups", index: 0, onclick: { fn: onViewMenuItemClick } },
+                                    { text: "Promotion", index: 1, onclick: { fn: onViewMenuItemClick } },
+                                    { text: "Table", index: 2, onclick: { fn: onViewMenuItemClick } },
+                                    { text: "Notes", index: 3, onclick: { fn: onViewMenuItemClick } },
+                                    { text: "Help", index: 4, onclick: { fn: onViewMenuItemClick } }
+                                ]
+                            ]
+                        }
+                    }
+                ];
+
+                var onClose = function () {
+                    if (calibrator.data.dirty) {
+                        event.returnValue = "Your changes will be discarded and the Cancel button below will not prevent that - use \"Exit\" from the File menu in the future.";
+                    }
+                }
+
+                var load = function () {
+                    calibrator.view.tab = new YAHOO.widget.TabView("tabView");
+                    calibrator.view.tab.set("activeIndex", 1);
+
+                    var tab;
+
+                    tab = calibrator.view.tab.getTab(0);
+                    tab.addListener("beforeActiveChange", rewardHandler);
+
+                    tab = calibrator.view.tab.getTab(1);
+                    tab.addListener("beforeActiveChange", promotionHandler);
+
+                    tab = calibrator.view.tab.getTab(2);
+                    tab.addListener("beforeActiveChange", tableHandler);
+
+                    tab = calibrator.view.tab.getTab(3);
+                    tab.addListener("beforeActiveChange", notesHandler);
+
+                    tab = calibrator.view.tab.getTab(4);
+                    tab.addListener("beforeActiveChange", helpHandler);
+
+
+                    calibrator.view.compare = new YAHOO.widget.Panel("comparePanel", { width: "896px", fixedcenter: false, close: true, draggable: true, zindex: 4, visible: false });
+                    calibrator.view.compare.setHeader("Compare");
+                    calibrator.view.compare.render(document.body);
+                    calibrator.view.compare.center();
+                    calibrator.view.compare.handlers = CompareWindowHandlers();
+
+                    calibrator.view.properties = new YAHOO.widget.Panel("propertiesPanel", { width: "402px", fixedcenter: false, close: true, draggable: true, zindex: 5, visible: false, autofillheight: "body" });
+                    calibrator.view.properties.render(document.body);
+                    calibrator.view.properties.center();
+                    calibrator.view.properties.handlers = PropertyWindowHandlers();
+
+                    var resize = new YAHOO.util.Resize("propertiesPanel", {
+                        handles: ["br"],
+                        autoRatio: false,
+                        minWidth: 402,
+                        minHeight: 396,
+                        status: false
+                    });
+
+                    resize.on("resize", function (args) {
+                        var panelHeight = args.height;
+                        this.cfg.setProperty("height", panelHeight + "px");
+                        var textArea = calibrator.view.properties.body.getElementsByTagName("textarea")[0];
+                        textArea.style.width = (args.width - 30) + "px";
+                        textArea.style.height = (args.height - 100) + "px";
+
+                    }, calibrator.view.properties, true);
+
+                    calibrator.view.menuBar = new YAHOO.widget.MenuBar("myMenuBar", {
+                        lazyload: true,
+                        itemdata: arrMenuItemData
+                    });
+                    calibrator.view.menuBar.render(menuBar);
+                    calibrator.view.menuBar.showRewardRatings = false;
+
+                    window.document.body.onkeydown = onMenuKeyDown;
+                    window.document.body.onbeforeunload = onClose;
+                };
+
+                return {
+                    load: load
+                };
+            }();
+
+        </script>
+
+        <style type="text/css">
+            .yui-skin-sam .yui-dt-liner {
+                white-space: nowrap;
+            }
+
+            .yui-navset .yui-nav .selected a, .yui-navset .yui-nav a:hover, .yui-navset .yui-content {
+                background-color: #f6f7ee; /* active tab, tab hover, and content bgcolor */
+            }
+
+            .yui-navset {
+                padding: 10px;
+                min-width: 2400px;
+            }
+
+            .yui-skin-sam .yui-navset .yui-content {
+                padding: 0px;
+            }
+
+            div.column {
+                margin-left: 10px;
+                margin-top: 5px;
+                margin-bottom: 10px;
+                float: left;
+            }
+
+            div.columnHeader {
+                text-align: center;
+                font-size: 14pt;
+                margin-top: 5px;
+                padding-top: 5px;
+                xbackground-color: #B8CCE4;
+                cursor: pointer;
+            }
+
+            div.columnStats {
+                text-align: center;
+                margin-bottom: 10px;
+                min-height: 24px;
+                padding-bottom: 5px;
+                xbackground-color: #B8CCE4;
+                cursor: pointer;
+            }
+
+            div.keyHeader {
+                font-size: 14pt;
+                margin-top: 15px;
+                margin-bottom: 5px;
+            }
+
+            table.cmp {
+                border-collapse: collapse;
+            }
+
+            td.cmpCell {
+                border: 0;
+                padding: 4px;
+                margin: 0px;
+                text-align: center;
+                background-color: #B8CCE4;
+            }
+
+            td.cmpLabel {
+                border: 0;
+                padding: 8px;
+                padding-bottom: 2px;
+                margin: 0px;
+                vertical-align: bottom;
+                text-align: center;
+                background-color: #7494BA;
+                color: white;
+            }
+
+            div.cmpBox {
+                background-color: #7494BA;
+                color: white;
+                margin-top: 10px;
+                padding: 8px;
+            }
+
+            div.cmpOrg {
+                background-color: #B8CCE4;
+                color: #101010;
+                text-align: center;
+                vertical-align: middle;
+                width: 140px;
+                font-size: 9pt;
+                border-radius: 5px;
+                padding: 2px 4px 2px 4px;
+            }
+
+            div.cmpLine {
+                text-align: center;
+                font-size: 6pt;
+                width: 140px;
+            }
+
+            ul.draglist {
+                position: relative;
+                min-width: 120px;
+                min-height: 880px;
+                background: #f7f7f7;
+                border: 1px solid gray;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+                ul.draglist li {
+                    margin: 1px;
+                    cursor: move;
+                    zoom: 1;
+                }
+
+            ul.draglist_alt {
+                position: relative;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                /*
+            The bottom padding provides the cushion that makes the empty
+            list targetable.  Alternatively, we could leave the padding
+            off by default, adding it when we detect that the list is empty.
+            */
+                padding-bottom: 20px;
+            }
+
+                ul.draglist_alt li {
+                    margin: 1px;
+                    cursor: move;
+                }
+
+            .white {
+                background-color: white;
+                border: 1px solid white;
+            }
+
+            .darkgreen {
+                background-color: #C2D69A;
+                border: 1px solid #7EA6B2;
+            }
+
+            .green {
+                background-color: #D7E4BC;
+                border: 1px solid #7EA6B2;
+            }
+
+            .yellow {
+                background-color: #FFEB9C;
+                border: 1px solid #7EA6B2;
+            }
+
+            .red {
+                background-color: #FFC7CE;
+                border: 1px solid #7EA6B2;
+            }
+
+            .darkred {
+                background-color: #D99795;
+                border: 1px solid #7EA6B2;
+            }
+
+            .blue {
+                background-color: #B8CCE4;
+                border: 1px solid #7EA6B2;
+            }
+
+            .purple {
+                background-color: #CCC0DA;
+                border: 1px solid #7EA6B2;
+            }
+
+            .cyan {
+                background-color: #B7DEE8;
+                border: 1px solid #7EA6B2;
+            }
+
+            .orange {
+                background-color: #FCD5B4;
+                border: 1px solid #7EA6B2;
+            }
+
+            .gray {
+                background-color: #D9D9D9;
+                border: 1px solid #7EA6B2;
+            }
+
+            .black {
+                background-color: #000000;
+                border: 1px solid #7EA6B2;
+                color: white;
+            }
+
+            .white {
+                background-color: #FFFFFF;
+                border: 1px solid #7EA6B2;
+                color: black;
+            }
+
+            .darkblue {
+                background-color: #7494BA;
+                border: 1px solid #7EA6B2;
+                color: white;
+            }
+
+            .darkgray {
+                background-color: gray;
+                border: 1px solid #7EA6B2;
+                color: white;
+            }
+
+            .darkyellow {
+                background-color: #ffd800;
+                border: 1px solid #7EA6B2;
+            }
+
+            .green1 {
+                background-color: #C6EFCE;
+                border: 1px solid #7EA6B2;
+            }
+
+            .yellow2 {
+                background-color: #FFEB9C;
+                border: 1px solid #7EA6B2;
+            }
+
+            .red3 {
+                background-color: #FFC7CE;
+                border: 1px solid #7EA6B2;
+            }
+
+            .peerCell {
+                background-color: #f7f7f7;
+                border: 1px solid #7EA6B2;
+            }
+
+            #propPictureDiv {
+                height: 80px;
+                width: 80px;
+            }
+
+            #propPicture {
+                width: 80px;
+                height: 80px;
+                background-size: auto 100%;
+                background-repeat: no-repeat;
+                background-position: center center;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #propName {
+                font-size: 14pt;
+            }
+
+            #propTitle {
+                font-size: 10pt;
+            }
+
+            #propText {
+                margin-left: 2px;
+                margin-top: 10px;
+            }
+
+            #propertiesPanel .yui-resize-handle-br {
+                right: 0;
+                bottom: 0;
+                height: 8px;
+                width: 8px;
+                position: absolute;
+            }
+
+            #helpView {
+                margin-left: 10px;
+                font-family: Calibri;
+                font-size: 12pt;
+                visibility: hidden;
+                width: 800px;
+            }
+
+            #notesView {
+                margin-left: 10px;
+                font-family: Calibri;
+                width: 800px;
+            }
+        </style>
+</head>
+
+<body class="yui-skin-sam">
+    <div id="main">
+        <div id="menuBar"></div>
+        <div id="tabView" class="yui-navset">
+            <ul class="yui-nav">
+                <li id="peerTab"><a href="#peerView"><em>Impact Groups</em></a></li>
+                <li id="promoTab"><a href="#promoView"><em>Promotion</em></a></li>
+                <li id="tableTab"><a href="#tableView"><em>Table</em></a></li>
+                <li id="notesTab"><a href="#notesView"><em>Notes</em></a></li>
+                <li id="helpTab"><a href="#helpView"><em>Help</em></a></li>
+            </ul>
+            <div class="yui-content">
+                <div id="peerView"></div>
+                <div id="promoView"></div>
+                <div id="tableView"></div>
+                <div id="notesView"></div>
+                <div id="helpView">
+                    <h1>ImpactMatch</h1>
+                    <p>For support email kipo</p>
+
+                    <h3>Requirements:</h3>
+
+                    <ul>
+                        <li>Windows 7 or later</li>
+
+                        <li>Internet Explorer 9 or later</li>
+
+                        <li>Excel 2010 or later</li>
+
+                        <li>Internet connection (used for UI frameworks)</li>
+                    </ul>
+
+                    <h3>Spreadsheet Format</h3>
+
+                    <p>ImpactMatch reads and writes information from an Excel spreadsheet. The spreadsheet must contain a sheet named “Table1” with specific column headers and rows of data. If a required column is missing, a dialog will be displayed describing the missing columns. ImpactMatch saves the impact group as a floating point number in the “Assigned Group” column. The only required columns are “Email” and “Rewards Level”.</p>
+
+                    <h3>Running ImpactMatch</h3>
+
+                    <p>Launch ImpactMatch.hta and click the Browse button to select a spreadsheet. It will then show the following different views of the people data.</p>
+
+                    <h3>Impact Groups Tab</h3>
+
+                    <p>This tab allows you to change impact groups. Some features to note:</p>
+
+                    <ul>
+                        <li>The Level Band dropdown determines the level band to display.</li>
+
+                        <li>People are initially slotted into an impact group based on the “Assigned Group” column in the spreadsheet.</li>
+
+                        <li>If a person does not have a impact group value in the spreadsheet (often because they are new to the team) they will be slotted into the “Unassigned” group.</li>
+
+                        <li>Displayed to the left of each impact group row is the number of people in that group.</li>
+
+                        <li>Drag and drop to move people between groups. Drag and drop on the blue bar next to a name to drag multiple people at once.</li>
+
+                        <li>Click on a person to bring up a comparison window showing review history for that person, including length in level and previous review scores.</li>
+                        <ul>
+                            <li>Clicking again on another person will add that person to the comparison window.</li>
+                            <li>Clicking on the column header will add everyone in the column to the comparison window.</li>
+                            <li>Clicking on the row numbers will add everyone in the row to the comparison window.</li>
+                            <li>Clicking on a person in the comparison window will display notes about them.</li>
+                            <li>Right-clicking on a person in the comparison window will remove them.</li>
+                        </ul>
+
+                        <li>Use the “Save” item from the "File" menu to save the peer group changes back to the spreadsheet.</li>
+                    </ul>
+
+                    <h3>Promotion Tab</h3>
+
+                    <p>This tab displays the promotion estimates color-coded by time horizon. Some features to note:</p>
+
+                    <ul>
+                        <li>Green is for promotions right now.</li>
+
+                        <li>Yellow for promotions in 6 months.</li>
+
+                        <li>Red for promotion out one year.</li>
+
+                        <li>White is for promotions more than a year out.</li>
+
+                        <li>Click on a person to bring up the comparison window.</li>
+                    </ul>
+
+                    <h3>Table Tab</h3>
+
+                    <p>This tab displays the all the information from the spreadsheet in tabular form. To sort by a column, click on the column header.</p>
+
+                    <h3>Notes Tab</h3>
+
+                    <p>This tab displays the text notes for each person who has one.</p>
+
+                    <h3>Release History</h3>
+
+                    May 10, 2011 -  First release <br>
+                    May 15, 2017 - Sixth release<br>
+
+                </div>
+            </div>
+        </div>
+</body>
+</html>
